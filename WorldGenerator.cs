@@ -19,6 +19,9 @@ namespace YourGameNamespace
         private Dictionary<Vector2Int, GameObject> worldGrid = new Dictionary<Vector2Int, GameObject>();
         private BiomeManager biomeManager;
 
+        private const string WaterLayerName = "Water";
+        private const string MountainLayerName = "Mountain";
+
         void Start()
         {
             biomeManager = FindObjectOfType<BiomeManager>();
@@ -43,37 +46,49 @@ namespace YourGameNamespace
             }
         }
 
-        void GenerateResourceVein()
+    void GenerateResourceVein()
+    {
+        Vector2Int startPos;
+        int attempts = 0;
+        const int maxAttempts = 100;
+
+        do
         {
-            Vector2Int startPos;
-            do
+            startPos = new Vector2Int(Random.Range(0, worldSizeX), Random.Range(0, worldSizeY));
+            attempts++;
+            if (attempts >= maxAttempts)
             {
-                startPos = new Vector2Int(Random.Range(0, worldSizeX), Random.Range(0, worldSizeY));
-            } while (biomeManager.IsWaterAt(startPos) || biomeManager.IsMountainAt(startPos));
-
-            int veinSize = Random.Range(minVeinSize, maxVeinSize + 1);
-            GameObject resourcePrefab = ChooseRandomResource();
-
-            List<Vector2Int> veinTiles = new List<Vector2Int>();
-            veinTiles.Add(startPos);
-
-            for (int i = 1; i < veinSize; i++)
-            {
-                Vector2Int lastTile = veinTiles[veinTiles.Count - 1];
-                List<Vector2Int> possibleNextTiles = GetAdjacentTiles(lastTile);
-                possibleNextTiles = possibleNextTiles.FindAll(tile => !worldGrid.ContainsKey(tile) && IsInWorldBounds(tile) && !biomeManager.IsWaterAt(tile) && !biomeManager.IsMountainAt(tile));
-
-                if (possibleNextTiles.Count == 0) break;
-
-                Vector2Int nextTile = possibleNextTiles[Random.Range(0, possibleNextTiles.Count)];
-                veinTiles.Add(nextTile);
+                Debug.LogWarning("Failed to find a suitable position for resource vein after " + maxAttempts + " attempts.");
+                return;
             }
+        } while (biomeManager.IsWaterAt(startPos) || biomeManager.IsMountainAt(startPos));
 
-            foreach (Vector2Int tile in veinTiles)
-            {
-                PlaceResource(tile, resourcePrefab);
-            }
+        int veinSize = Random.Range(minVeinSize, maxVeinSize + 1);
+        GameObject resourcePrefab = ChooseRandomResource();
+
+        List<Vector2Int> veinTiles = new List<Vector2Int>();
+        veinTiles.Add(startPos);
+
+        for (int i = 1; i < veinSize; i++)
+        {
+            Vector2Int lastTile = veinTiles[veinTiles.Count - 1];
+            List<Vector2Int> possibleNextTiles = GetAdjacentTiles(lastTile);
+            possibleNextTiles = possibleNextTiles.FindAll(tile => 
+                !worldGrid.ContainsKey(tile) && 
+                IsInWorldBounds(tile) && 
+                !IsWaterOrMountainAt(tile));
+
+            if (possibleNextTiles.Count == 0) break;
+
+            Vector2Int nextTile = possibleNextTiles[Random.Range(0, possibleNextTiles.Count)];
+            veinTiles.Add(nextTile);
         }
+
+        foreach (Vector2Int tile in veinTiles)
+        {
+            PlaceResource(tile, resourcePrefab);
+        }
+    }
 
         List<Vector2Int> GetAdjacentTiles(Vector2Int tile)
         {
@@ -115,6 +130,16 @@ namespace YourGameNamespace
         {
             worldGrid.TryGetValue(position, out GameObject resource);
             return resource;
+        }
+
+        bool IsWaterOrMountainAt(Vector2Int position)
+        {
+            Vector3 worldPosition = new Vector3(position.x * cellSize, position.y * cellSize, 0);
+            int waterLayer = LayerMask.GetMask(WaterLayerName);
+            int mountainLayer = LayerMask.GetMask(MountainLayerName);
+            int layerMask = waterLayer | mountainLayer;
+
+            return Physics2D.OverlapCircle(worldPosition, cellSize / 2f, layerMask) != null;
         }
 
         public Vector2 GetWorldCenter()

@@ -18,6 +18,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isMining = false;
     private PlayerInventory inventory;
     private MessageManager messageManager;
+    private bool isHoldingRightClick = false;
 
     void Start()
     {
@@ -32,6 +33,12 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         HandleMouseInput();
+
+        if (isHoldingRightClick)
+        {
+            Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            SetTargetPosition(mouseWorldPosition);
+        }
 
         // If the player is moving, stop mining
         if (isMoving)
@@ -77,6 +84,21 @@ public class PlayerMovement : MonoBehaviour
         Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         RaycastHit2D hit = Physics2D.Raycast(mouseWorldPosition, Vector2.zero);
 
+        if (Input.GetMouseButtonDown(1)) // Right mouse button pressed
+        {
+            isHoldingRightClick = true;
+            HandleRightClick(mouseWorldPosition, hit);
+        }
+        else if (Input.GetMouseButtonUp(1)) // Right mouse button released
+        {
+            isHoldingRightClick = false;
+        }
+
+        if (isHoldingRightClick)
+        {
+            SetTargetPosition(mouseWorldPosition);
+        }
+
         if (hit.collider != null)
         {
             Smelter clickedSmelter = hit.collider.GetComponent<Smelter>();
@@ -89,42 +111,26 @@ public class PlayerMovement : MonoBehaviour
             Resource clickedResource = hit.collider.GetComponent<Resource>();
             if (clickedResource != null)
             {
-                // Change cursor to mining cursor when hovering over a resource
                 Cursor.SetCursor(miningCursor, Vector2.zero, CursorMode.Auto);
 
                 if (Input.GetMouseButtonDown(0)) // Left click
                 {
                     ShowResourceInfo(clickedResource);
                 }
-                else if (Input.GetMouseButtonDown(1)) // Right click
-                {
-                    SetTargetResource(clickedResource, hit.point);
-                }
             }
             else
             {
                 Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
-                if (Input.GetMouseButtonDown(1)) // Right click
-                {
-                    SetTargetPosition(hit.point);
-                }
             }
         }
         else
         {
             Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
-            if (Input.GetMouseButtonDown(1)) // Right click
-            {
-                SetTargetPosition(mouseWorldPosition);
-            }
         }
     }
 
-    void HandleRightClick()
+    void HandleRightClick(Vector2 mouseWorldPosition, RaycastHit2D hit)
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-
         if (hit.collider != null)
         {
             Resource clickedResource = hit.collider.GetComponent<Resource>();
@@ -152,7 +158,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            SetTargetPosition(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+            SetTargetPosition(mouseWorldPosition);
             isMining = false;
         }
     }

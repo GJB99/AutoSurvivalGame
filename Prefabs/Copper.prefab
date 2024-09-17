@@ -101,7 +101,7 @@ MonoBehaviour:
   resourceName: Copper
   initialQuantity: 0
   currentQuantity: 0
-  miningRange: 2
+  miningRange: 1
   cellSize: 1
 --- !u!58 &1857943188847252137
 CircleCollider2D:
