@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a89d065fc96f50c4e8895861e152eda5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resourceName: Copper
+  resourceName: IronIngot
   initialQuantity: 0
   currentQuantity: 0
   miningRange: 1

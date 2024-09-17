@@ -6,6 +6,10 @@ public class BuildingSystem : MonoBehaviour
 {
     public GameObject chestPrefab;
     public GameObject smelterPrefab;
+    public GameObject drillPrefab;
+    public GameObject conveyorBeltPrefab;
+    public GameObject cookingStationPrefab;
+
     private PlayerInventory playerInventory;
     public TextMeshProUGUI messageText;
     public float messageDisplayTime = 2f;
@@ -35,6 +39,18 @@ public class BuildingSystem : MonoBehaviour
             else if (Input.GetKeyDown(KeyCode.Alpha4))
             {
                 StartCoroutine(TryBuildProcessor());
+            }
+                else if (Input.GetKeyDown(KeyCode.Alpha5))
+            {
+                StartCoroutine(TryBuildDrill());
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha6))
+            {
+                StartCoroutine(TryBuildConveyorBelt());
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha7))
+            {
+                StartCoroutine(TryBuildCookingStation());
             }
         }
     }
@@ -120,6 +136,59 @@ public class BuildingSystem : MonoBehaviour
         else
         {
             ShowMessage("Not enough resources to build a Processor!");
+        }
+    }
+
+    IEnumerator TryBuildDrill()
+    {
+        if (playerInventory.CanBuild("Iron Ingot", 15) && playerInventory.CanBuild("Processor", 1))
+        {
+            playerInventory.RemoveItems("Iron Ingot", 15);
+            playerInventory.RemoveItems("Processor", 1);
+            ShowMessage("Fabricating Drill...");
+            yield return new WaitForSeconds(fabricationTime);
+            Vector3 spawnPosition = transform.position + transform.forward * 2f;
+            Instantiate(drillPrefab, spawnPosition, Quaternion.identity);
+            ShowMessage("Drill fabricated and placed!");
+        }
+        else
+        {
+            ShowMessage("Not enough resources to build a Drill!");
+        }
+    }
+
+    IEnumerator TryBuildConveyorBelt()
+    {
+        if (playerInventory.CanBuild("Iron Ingot", 5))
+        {
+            playerInventory.RemoveItems("Iron Ingot", 5);
+            ShowMessage("Fabricating Conveyor Belt...");
+            yield return new WaitForSeconds(fabricationTime);
+            Vector3 spawnPosition = transform.position + transform.forward * 2f;
+            Instantiate(conveyorBeltPrefab, spawnPosition, Quaternion.identity);
+            ShowMessage("Conveyor Belt fabricated and placed!");
+        }
+        else
+        {
+            ShowMessage("Not enough resources to build a Conveyor Belt!");
+        }
+    }
+
+    IEnumerator TryBuildCookingStation()
+    {
+        if (playerInventory.CanBuild("Iron Ingot", 10) && playerInventory.CanBuild("Stone", 5))
+        {
+            playerInventory.RemoveItems("Iron Ingot", 10);
+            playerInventory.RemoveItems("Stone", 5);
+            ShowMessage("Fabricating Cooking Station...");
+            yield return new WaitForSeconds(fabricationTime);
+            Vector3 spawnPosition = transform.position + transform.forward * 2f;
+            Instantiate(cookingStationPrefab, spawnPosition, Quaternion.identity);
+            ShowMessage("Cooking Station fabricated and placed!");
+        }
+        else
+        {
+            ShowMessage("Not enough resources to build a Cooking Station!");
         }
     }
 

@@ -20,22 +20,16 @@ public class Resource : MonoBehaviour
     public bool IsInMiningRange(Vector3 playerPosition)
     {
         // Use the center of the cell for distance calculation
-        Vector3 resourceCenter = transform.position + new Vector3(cellSize / 2, cellSize / 2, 0);
+        Vector3 resourceCenter = transform.position + new Vector3(cellSize / 4, cellSize / 4, 0);
         float distance = Vector2.Distance(resourceCenter, playerPosition);
         
         // Adjust the range check for better accuracy
         return distance <= miningRange + cellSize / 2f;
     }
 
-
-    void SetResourceName()
-    {
-        resourceName = gameObject.name.Replace("(Clone)", "").Trim();
-    }
-
     public void Mine()
     {
-        if (currentQuantity > 0)
+        if (currentQuantity > 0 && gameObject.tag != "Water" && gameObject.tag != "Mountain")
         {
             currentQuantity--;
             if (currentQuantity <= 0)
@@ -43,6 +37,11 @@ public class Resource : MonoBehaviour
                 StartCoroutine(DestroyResource());
             }
         }
+    }
+
+    void SetResourceName()
+    {
+        resourceName = gameObject.name.Replace("(Clone)", "").Trim();
     }
 
     public bool IsDepletedResource()

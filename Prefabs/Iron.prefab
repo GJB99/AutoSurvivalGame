@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 3828313598214977607}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.68, y: 2.14, z: 0}
+  m_LocalPosition: {x: 1, y: 1, z: 0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a89d065fc96f50c4e8895861e152eda5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resourceName: Copper
+  resourceName: Iron
   initialQuantity: 0
   currentQuantity: 0
   miningRange: 1
@@ -137,4 +137,4 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 2.5

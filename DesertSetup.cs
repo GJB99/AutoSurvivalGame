@@ -1,4 +1,5 @@
 using UnityEngine;
+using YourGameNamespace;
 
 public class DesertSetup : MonoBehaviour
 {
