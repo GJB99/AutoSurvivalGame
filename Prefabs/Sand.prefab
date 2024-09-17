@@ -10,11 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 3581881924276777091}
   - component: {fileID: 1594161326244866745}
-  - component: {fileID: 3992249589748454238}
   - component: {fileID: 8149462316970205236}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Sand
-  m_TagString: Resource
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -72,8 +71,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -700816349
-  m_SortingLayer: 1
+  m_SortingLayerID: -481612689
+  m_SortingLayer: 3
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: f620181b697e4bb4a83cd754c5fc0c3a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -86,23 +85,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &3992249589748454238
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4303407455986733125}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a89d065fc96f50c4e8895861e152eda5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  resourceName: Sand
-  initialQuantity: 0
-  currentQuantity: 0
-  miningRange: 1
-  cellSize: 1
 --- !u!58 &8149462316970205236
 CircleCollider2D:
   m_ObjectHideFlags: 0
