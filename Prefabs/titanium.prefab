@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7119106423661936980}
   - component: {fileID: 3816674071966771272}
   m_Layer: 8
-  m_Name: titanium
+  m_Name: Titanium
   m_TagString: Resource
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1,6 +1,8 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
+using UnityEngine.UI;
 
 public class PlayerInventory : MonoBehaviour
 {
@@ -11,11 +13,16 @@ public class PlayerInventory : MonoBehaviour
     public TextMeshProUGUI buildingMenuText;
     private bool isInventoryVisible = false;
     private bool isBuildingMenuVisible = false;
+    private ItemBar itemBar;
+    public GameObject inventoryItemPrefab;
+    public Transform inventoryItemsContainer;
+    private List<GameObject> inventoryItemObjects = new List<GameObject>();
 
     void Start()
     {
         if (inventoryUI != null) inventoryUI.SetActive(false);
         if (buildingMenuUI != null) buildingMenuUI.SetActive(false);
+        itemBar = FindObjectOfType<ItemBar>();
         UpdateInventoryDisplay();
         UpdateBuildingMenuDisplay();
     }
@@ -42,6 +49,11 @@ public class PlayerInventory : MonoBehaviour
         }
     }
 
+    public List<KeyValuePair<string, int>> GetInventoryItems()
+    {
+        return inventory.ToList();
+    }
+
     public void AddItem(string itemName, int quantity)
     {
         if (inventory.ContainsKey(itemName))
@@ -53,18 +65,49 @@ public class PlayerInventory : MonoBehaviour
             inventory[itemName] = quantity;
         }
         UpdateInventoryDisplay();
+        if (itemBar != null) itemBar.UpdateItemBar(); // Add this line
     }
 
     private void UpdateInventoryDisplay()
     {
-        if (inventoryText != null)
+        if (inventoryItemsContainer != null)
         {
-            string displayText = "Inventory:\n";
+            // Clear existing inventory items
+            foreach (GameObject item in inventoryItemObjects)
+            {
+                Destroy(item);
+            }
+            inventoryItemObjects.Clear();
+
+            // Create new inventory items
             foreach (var item in inventory)
             {
-                displayText += $"{item.Key}: {item.Value}\n";
+                GameObject newItem = Instantiate(inventoryItemPrefab, inventoryItemsContainer);
+                Image itemImage = newItem.GetComponent<Image>();
+                TextMeshProUGUI quantityText = newItem.GetComponentInChildren<TextMeshProUGUI>();
+
+                string formattedName = item.Key.Replace(" ", "_");
+                Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
+                
+                if (itemSprite == null)
+                {
+                    itemSprite = Resources.Load<Sprite>("Images/" + item.Key.Replace(" ", ""));
+                }
+
+                if (itemSprite != null)
+                {
+                    itemImage.sprite = itemSprite;
+                    itemImage.color = Color.white;
+                }
+                else
+                {
+                    Debug.Log($"Failed to load sprite: {item.Key}");
+                    itemImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+                }
+
+                quantityText.text = item.Value.ToString();
+                inventoryItemObjects.Add(newItem);
             }
-            inventoryText.text = displayText;
         }
     }
 

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8116130270159754146}
   - component: {fileID: 3508030499716889085}
   m_Layer: 8
-  m_Name: uranium
+  m_Name: Uranium
   m_TagString: Resource
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

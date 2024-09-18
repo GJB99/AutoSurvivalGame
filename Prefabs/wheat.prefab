@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2642934886225329459}
   - component: {fileID: 8291604499801410861}
   m_Layer: 8
-  m_Name: wheat
+  m_Name: Wheat
   m_TagString: Resource
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

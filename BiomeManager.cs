@@ -8,13 +8,14 @@ namespace YourGameNamespace
         Desert,
         IndustrialWasteland,
         AlienArea,
-        Lava
+        Lava,
+        Water
     }
 
     public class BiomeManager : MonoBehaviour
     {
-        public int worldSizeX = 400;
-        public int worldSizeY = 400;
+        public int worldSizeX = 200;
+        public int worldSizeY = 200;
         public float noiseScale = 20f;
 
         public GameObject forestPrefab;
@@ -144,9 +145,11 @@ namespace YourGameNamespace
             GameObject biomeTile = Instantiate(prefab, position, Quaternion.identity);
             biomeTile.transform.SetParent(transform);
 
-            if (biomeType == BiomeType.Forest && IsWaterTile(x, y))
+            if (IsWaterTile(x, y))
             {
-                biomeTile.layer = waterLayer;
+                GameObject waterTile = Instantiate(waterPrefab, position, Quaternion.identity);
+                waterTile.transform.SetParent(transform);
+                waterTile.layer = waterLayer;
             }
             else if (biomeType == BiomeType.Desert && IsMountainTile(x, y))
             {
@@ -156,8 +159,11 @@ namespace YourGameNamespace
 
         bool IsWaterTile(int x, int y)
         {
-            // Implement your water tile logic here
-            return false; // Placeholder
+            if (x < 0 || x >= worldSizeX || y < 0 || y >= worldSizeY)
+            {
+                return false;
+            }
+            return biomeMap[x, y] == BiomeType.Water;
         }
 
         bool IsMountainTile(int x, int y)
@@ -174,6 +180,18 @@ namespace YourGameNamespace
         public bool IsMountainAt(Vector2Int position)
         {
             return IsMountainTile(position.x, position.y);
+        }
+
+        public void SetWaterAt(Vector2Int position, bool isWater)
+        {
+            if (position.x >= 0 && position.x < worldSizeX && position.y >= 0 && position.y < worldSizeY)
+            {
+                if (isWater)
+                {
+                    biomeMap[position.x, position.y] = BiomeType.Water;
+                    InstantiateBiomeTile(position.x, position.y, BiomeType.Water);
+                }
+            }
         }
     }
 }

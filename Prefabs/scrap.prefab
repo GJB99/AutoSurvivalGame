@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 9218943240648645784}
   - component: {fileID: 2741990073425830569}
   m_Layer: 8
-  m_Name: scrap
+  m_Name: Scrap
   m_TagString: Resource
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2321013277177202726}
   - component: {fileID: 2697257978176400441}
   m_Layer: 8
-  m_Name: oil
+  m_Name: Oil
   m_TagString: Resource
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

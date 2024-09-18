@@ -14,6 +14,16 @@ namespace YourGameNamespace
         public Color waterColor = Color.blue; // Blue for water
         public Color mountainColor = Color.gray; // Gray for mountains
         public Color lavaColor = Color.red; // Red for lava
+        public Color woodColor = new Color(0.54f, 0.27f, 0.07f);
+        public Color herbColor = new Color(0.13f, 0.55f, 0.13f);
+        public Color tinColor = new Color(0.8f, 0.8f, 0.8f);
+        public Color clayColor = new Color(0.76f, 0.7f, 0.5f);
+        public Color wheatColor = new Color(0.93f, 0.86f, 0.51f);
+        public Color carrotColor = new Color(1f, 0.55f, 0f);
+        public Color oilColor = new Color(0.1f, 0.1f, 0.1f);
+        public Color scrapColor = new Color(0.5f, 0.5f, 0.5f);
+        public Color titaniumColor = new Color(0.75f, 0.75f, 0.75f);
+        public Color uraniumColor = new Color(0.2f, 0.8f, 0.2f);
         public Color playerColor = Color.green;
 
         public Color forestColor = new Color(0.1f, 0.8f, 0.1f);

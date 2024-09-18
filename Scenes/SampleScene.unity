@@ -562,7 +562,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 10
-  miningRate: 1
+  miningRate: 0.1
   cellSize: 1
   miningInfoText: {fileID: 0}
   messageText: {fileID: 1040603363}
@@ -586,6 +586,8 @@ MonoBehaviour:
   buildingMenuUI: {fileID: 1284911069}
   inventoryText: {fileID: 1799111752}
   buildingMenuText: {fileID: 1808139045}
+  inventoryItemPrefab: {fileID: 0}
+  inventoryItemsContainer: {fileID: 0}
 --- !u!114 &511426194
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -859,8 +861,18 @@ MonoBehaviour:
   ironColor: {r: 0.75, g: 0.75, b: 0.8, a: 1}
   stoneColor: {r: 0.59119487, g: 0.54562926, b: 0.4071436, a: 1}
   waterColor: {r: 0, g: 0, b: 1, a: 1}
-  mountainColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  mountainColor: {r: 0, g: 0, b: 0, a: 1}
   lavaColor: {r: 1, g: 0, b: 0, a: 1}
+  woodColor: {r: 0.54, g: 0.27, b: 0.07, a: 1}
+  herbColor: {r: 0.13, g: 0.55, b: 0.13, a: 1}
+  tinColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+  clayColor: {r: 0.76, g: 0.7, b: 0.5, a: 1}
+  wheatColor: {r: 0.93, g: 0.86, b: 0.51, a: 1}
+  carrotColor: {r: 1, g: 0.55, b: 0, a: 1}
+  oilColor: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+  scrapColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  titaniumColor: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+  uraniumColor: {r: 0.2, g: 0.8, b: 0.2, a: 1}
   playerColor: {r: 0, g: 1, b: 0, a: 1}
   forestColor: {r: 0.1, g: 0.8, b: 0.1, a: 1}
   desertColor: {r: 0.9, g: 0.9, b: 0.5, a: 1}
@@ -1342,6 +1354,124 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1284911069}
   m_CullTransparentMesh: 1
+--- !u!1 &1401847957
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1401847962}
+  - component: {fileID: 1401847961}
+  - component: {fileID: 1401847960}
+  - component: {fileID: 1401847959}
+  - component: {fileID: 1401847963}
+  m_Layer: 5
+  m_Name: ItemBar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1401847959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401847957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &1401847960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401847957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_UiScaleMode: 1
+  m_ReferencePixelsPerUnit: 10
+  m_ScaleFactor: 1
+  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ScreenMatchMode: 1
+  m_MatchWidthOrHeight: 0.505
+  m_PhysicalUnit: 3
+  m_FallbackScreenDPI: 96
+  m_DefaultSpriteDPI: 96
+  m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 0
+--- !u!223 &1401847961
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401847957}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+  m_Camera: {fileID: 519420031}
+  m_PlaneDistance: 0
+  m_PixelPerfect: 1
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 1
+  m_AdditionalShaderChannelsFlag: -1
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
+--- !u!224 &1401847962
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401847957}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 0}
+--- !u!114 &1401847963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401847957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76f25a578decd0041aee96453d43b933, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemSlotPrefab: {fileID: 1094164463703806785, guid: c02609bd4ab956448bf2a019aba01b72, type: 3}
+  numberOfSlots: 10
+  playerInventory: {fileID: 511426193}
+  spacing: 20
 --- !u!1 &1451119679
 GameObject:
   m_ObjectHideFlags: 0
@@ -1374,9 +1504,9 @@ MonoBehaviour:
   rockPrefab: {fileID: 805409599776951466, guid: ced56ee5d7b5b4f4d92bc01c21b49c73, type: 3}
   copperPrefab: {fileID: 2356628207637518155, guid: 27e3f0e315b07b14bbe782a40384c651, type: 3}
   ironPrefab: {fileID: 3828313598214977607, guid: dc9c3b6cc322fac4b841407f9fdd2fa2, type: 3}
+  waterPrefab: {fileID: 5249759396088340113, guid: 5bd958cd7860d364a95f0eb39110eec8, type: 3}
   woodPrefab: {fileID: 3097219435967893176, guid: 64dec19726da02a4f9393cd9672fcb9d, type: 3}
   herbPrefab: {fileID: 7181196766389292745, guid: 260fb638772c42f4780f65a0f30d8e21, type: 3}
-  waterPrefab: {fileID: 5249759396088340113, guid: 5bd958cd7860d364a95f0eb39110eec8, type: 3}
   tinPrefab: {fileID: 1727208986690218442, guid: 27fd69a8f9ed60445a4db6b5389dffe5, type: 3}
   clayPrefab: {fileID: 5528159813893847854, guid: 4be72aae217edca47b17820b66d5fe85, type: 3}
   wheatPrefab: {fileID: 6146400596051532876, guid: 316ad6d8156153f478a0401454da6722, type: 3}
@@ -1385,7 +1515,6 @@ MonoBehaviour:
   scrapPrefab: {fileID: 5886617449371394634, guid: 895cf1cc72c88674a94f9627a8409041, type: 3}
   titaniumPrefab: {fileID: 5630844657626583270, guid: 4b22425109e573d4282b1a776e78539d, type: 3}
   uraniumPrefab: {fileID: 1020357738087770065, guid: e3bc6c53f68322c47adda4330ef8a22b, type: 3}
-  lavaPrefab: {fileID: 4217933187270273527, guid: a5a6cce66790bd54e9354c266e82ad8f, type: 3}
   biomeManager: {fileID: 1514373000}
   worldSizeX: 200
   worldSizeY: 200
@@ -1773,16 +1902,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   worldGenerator: {fileID: 1451119680}
   player: {fileID: 511426186}
-  forestTileSprite: {fileID: 21300000, guid: d90cbba625cc0ab41af6c9dab80675d1, type: 3}
+  forestTileSprite: {fileID: 21300000, guid: 50327a2c9fe11114c86eb512370d63d9, type: 3}
   desertTileSprite: {fileID: 21300000, guid: f620181b697e4bb4a83cd754c5fc0c3a, type: 3}
   industrialWastelandTileSprite: {fileID: 21300000, guid: f620181b697e4bb4a83cd754c5fc0c3a, type: 3}
   alienAreaTileSprite: {fileID: 21300000, guid: e5414e6494974a141aab9c41b0eea2b5, type: 3}
   lavaTileSprite: {fileID: 21300000, guid: b7df0c910bc98ee4d8ba3f1ecc61e502, type: 3}
-  tileSize: 4
-  visibleTilesX: 25
-  visibleTilesY: 25
-  worldSizeX: 200
-  worldSizeY: 200
+  tileSize: 1
+  visibleTilesX: 10
+  visibleTilesY: 10
+  worldSizeX: 400
+  worldSizeY: 400
 --- !u!4 &1725301457
 Transform:
   m_ObjectHideFlags: 0
@@ -2545,6 +2674,7 @@ SceneRoots:
   - {fileID: 1725301457}
   - {fileID: 1451119681}
   - {fileID: 1514373001}
+  - {fileID: 1401847962}
   - {fileID: 2102380930}
   - {fileID: 198425852}
   - {fileID: 1854338582}
