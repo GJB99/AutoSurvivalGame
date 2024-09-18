@@ -56,21 +56,20 @@ namespace YourGameNamespace
                 {
                     int worldX = playerX + x - mapSize / 2;
                     int worldY = playerY + y - mapSize / 2;
-                    Vector2Int worldPos = new Vector2Int(worldX, worldY);
 
                     Color pixelColor = GetBiomeColor(biomeManager.GetBiomeAt(worldX, worldY));
 
-                    if (biomeManager.IsWaterAt(worldPos))
+                    if (biomeManager.IsWaterAt(new Vector2Int(worldX, worldY)))
                     {
                         pixelColor = waterColor;
                     }
-                    else if (biomeManager.IsMountainAt(worldPos))
+                    else if (biomeManager.IsMountainAt(new Vector2Int(worldX, worldY)))
                     {
                         pixelColor = mountainColor;
                     }
                     else
                     {
-                        GameObject resource = worldGenerator.GetResourceAt(worldPos);
+                        GameObject resource = worldGenerator.GetResourceAt(new Vector2Int(worldX, worldY));
                         if (resource != null)
                         {
                             pixelColor = GetResourceColor(resource);

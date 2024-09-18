@@ -10,6 +10,8 @@ public class PlayerMovement : MonoBehaviour
     public TextMeshProUGUI messageText;
     public float messageDisplayTime = 2f;
     public Texture2D miningCursor;
+    public Texture2D handCursor;
+    public Texture2D defaultCursor;
 
     private Vector3 targetPosition;
     private bool isMoving = false;
@@ -28,6 +30,8 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.LogError("PlayerInventory component not found on the player!");
         }
+
+        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
     }
 
     void Update()
@@ -101,32 +105,46 @@ public class PlayerMovement : MonoBehaviour
 
         if (hit.collider != null)
         {
-            Smelter clickedSmelter = hit.collider.GetComponent<Smelter>();
-            if (clickedSmelter != null)
+            if (IsClickableObject(hit.collider.gameObject))
             {
-                InteractWithSmelter(clickedSmelter);
-                return;
-            }
+                Cursor.SetCursor(handCursor, Vector2.zero, CursorMode.Auto);
 
-            Resource clickedResource = hit.collider.GetComponent<Resource>();
-            if (clickedResource != null)
+                if (Input.GetMouseButtonDown(0)) // Left click
+                {
+                    InteractWithClickable(hit.collider.gameObject);
+                }
+            }
+            else if (hit.collider.GetComponent<Resource>() != null)
             {
                 Cursor.SetCursor(miningCursor, Vector2.zero, CursorMode.Auto);
 
                 if (Input.GetMouseButtonDown(0)) // Left click
                 {
-                    ShowResourceInfo(clickedResource);
+                    ShowResourceInfo(hit.collider.GetComponent<Resource>());
                 }
             }
             else
             {
-                Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+                Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
             }
         }
         else
         {
-            Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+            Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
         }
+    }
+
+    bool IsClickableObject(GameObject obj)
+    {
+        return obj.GetComponent<Smelter>() != null; //
+    }
+
+    void InteractWithClickable(GameObject clickableObject)
+    {
+        if (clickableObject.TryGetComponent<Smelter>(out var smelter))
+        {
+            InteractWithSmelter(smelter);
+        }//
     }
 
     void HandleRightClick(Vector2 mouseWorldPosition, RaycastHit2D hit)

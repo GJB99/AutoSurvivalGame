@@ -36,7 +36,7 @@ namespace YourGameNamespace
         void Awake()
         {
             InitializeLayers();
-            GenerateBiomes(new Vector2Int(worldSizeX / 2, worldSizeY / 2)); // Generate biomes centered on the world
+            InitializeBiomeMap();
         }
 
         void InitializeLayers()
@@ -48,6 +48,27 @@ namespace YourGameNamespace
             {
                 Debug.LogError("Water or Mountain layer not found. Please create these layers in Edit > Project Settings > Tags and Layers.");
             }
+        }
+
+        public void InitializeBiomeMap()
+        {
+            if (biomeMap == null)
+            {
+                biomeMap = new BiomeType[worldSizeX, worldSizeY];
+                Vector2Int centerTile = new Vector2Int(worldSizeX / 2, worldSizeY / 2);
+                GenerateBiomes(centerTile);
+            }
+        }
+
+        private BiomeType DetermineBiomeType(int x, int y)
+        {
+            float noiseValue = Mathf.PerlinNoise(x / noiseScale, y / noiseScale);
+            
+            if (noiseValue < 0.2f) return BiomeType.Forest;
+            if (noiseValue < 0.4f) return BiomeType.Desert;
+            if (noiseValue < 0.6f) return BiomeType.IndustrialWasteland;
+            if (noiseValue < 0.8f) return BiomeType.AlienArea;
+            return BiomeType.Lava;
         }
 
         public void GenerateBiomes(Vector2Int centerTile)
@@ -105,11 +126,15 @@ namespace YourGameNamespace
 
         public BiomeType GetBiomeAt(int x, int y)
         {
-            if (x >= 0 && x < worldSizeX && y >= 0 && y < worldSizeY)
+            if (biomeMap == null)
             {
-                return biomeMap[x, y];
+                Debug.LogError("BiomeMap is not initialized!");
+                return BiomeType.Forest; // Default to Forest if map is not initialized
             }
-            return BiomeType.Forest; // Default to Forest if out of bounds
+            
+            x = Mathf.Clamp(x, 0, worldSizeX - 1);
+            y = Mathf.Clamp(y, 0, worldSizeY - 1);
+            return biomeMap[x, y];
         }
 
        void InstantiateBiomeTile(int x, int y, BiomeType biomeType)
