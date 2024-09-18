@@ -1,5 +1,7 @@
 using UnityEngine;
 using TMPro;
+using System.Collections;
+using System.Text.RegularExpressions;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -156,16 +158,11 @@ public class PlayerMovement : MonoBehaviour
             {
                 if (Vector2.Distance(transform.position, hit.point) <= clickedResource.miningRange + cellSize / 2f)
                 {
-                    currentResource = clickedResource;
-                    isMining = true;
-                    isMoving = false;
-                    Debug.Log($"Started mining {currentResource.resourceName}");
+                    StartMining(clickedResource);
                 }
                 else
                 {
-                    SetTargetPosition(hit.point);
-                    isMining = false;
-                    Debug.Log($"Moving towards {clickedResource.resourceName}");
+                    MoveToResourceAndMine(clickedResource, hit.point);
                 }
             }
             else
@@ -293,5 +290,37 @@ public class PlayerMovement : MonoBehaviour
             currentResource = null;
             Debug.Log("No resource to mine");
         }
+    }
+
+    void MoveToResourceAndMine(Resource resource, Vector2 targetPoint)
+    {
+        currentResource = resource;
+        SetTargetPosition(targetPoint);
+        StartCoroutine(WaitForMoveAndStartMining());
+    }
+
+    IEnumerator WaitForMoveAndStartMining()
+    {
+        while (isMoving)
+        {
+            yield return null;
+        }
+
+        if (currentResource != null && currentResource.IsInMiningRange(transform.position))
+        {
+            StartMining(currentResource);
+        }
+        else
+        {
+            Debug.Log("Failed to move into mining range.");
+        }
+    }
+
+    void StartMining(Resource resource)
+    {
+        currentResource = resource;
+        isMining = true;
+        isMoving = false;
+        Debug.Log($"Started mining {currentResource.resourceName}");
     }
 }
