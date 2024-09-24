@@ -1472,6 +1472,7 @@ MonoBehaviour:
   numberOfSlots: 10
   playerInventory: {fileID: 511426193}
   spacing: 20
+  scaleCoefficient: 1
 --- !u!1 &1451119679
 GameObject:
   m_ObjectHideFlags: 0

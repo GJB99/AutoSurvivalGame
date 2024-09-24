@@ -9,6 +9,7 @@ public class ItemBar : MonoBehaviour
     public int numberOfSlots = 8;
     public PlayerInventory playerInventory;
     public float spacing = 10f;
+    public float scaleCoefficient = 1f; // Add this line
 
     private List<GameObject> itemSlots = new List<GameObject>();
 
@@ -21,8 +22,8 @@ public class ItemBar : MonoBehaviour
     void CreateItemSlots()
     {
         RectTransform prefabRectTransform = itemSlotPrefab.GetComponent<RectTransform>();
-        float slotWidth = prefabRectTransform.rect.width;
-        float slotHeight = prefabRectTransform.rect.height;
+        float slotWidth = prefabRectTransform.rect.width * scaleCoefficient; // Adjust size using scaleCoefficient
+        float slotHeight = prefabRectTransform.rect.height * scaleCoefficient; // Adjust size using scaleCoefficient
         float posY = prefabRectTransform.anchoredPosition.y;
 
         float totalWidth = (slotWidth * numberOfSlots) + (spacing * (numberOfSlots - 1));
@@ -33,7 +34,7 @@ public class ItemBar : MonoBehaviour
             GameObject slot = Instantiate(itemSlotPrefab, transform);
             RectTransform slotRectTransform = slot.GetComponent<RectTransform>();
             slotRectTransform.anchoredPosition = new Vector2(startX + i * (slotWidth + spacing), posY);
-            slotRectTransform.sizeDelta = new Vector2(slotWidth, slotHeight);
+            slotRectTransform.sizeDelta = new Vector2(slotWidth, slotHeight); // Adjust size using scaleCoefficient
             itemSlots.Add(slot);
         }
     }
@@ -44,15 +45,24 @@ public class ItemBar : MonoBehaviour
 
         for (int i = 0; i < itemSlots.Count; i++)
         {
-            Image slotImage = itemSlots[i].GetComponent<Image>();
+            // Get the background image and item icon image
+            Image slotBackgroundImage = itemSlots[i].GetComponent<Image>();
+            Transform itemIconTransform = itemSlots[i].transform.Find("ItemIcon");
+            Image itemIconImage = itemIconTransform != null ? itemIconTransform.GetComponent<Image>() : null;
             TextMeshProUGUI quantityText = itemSlots[i].GetComponentInChildren<TextMeshProUGUI>();
+
+            if (itemIconImage == null)
+            {
+                Debug.LogError("ItemIcon Image component not found in ItemSlot prefab.");
+                continue;
+            }
 
             if (i < inventoryItems.Count)
             {
                 string itemName = inventoryItems[i].Key;
                 string formattedName = itemName.Replace(" ", "_");
                 Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
-                
+
                 if (itemSprite == null)
                 {
                     itemSprite = Resources.Load<Sprite>("Images/" + itemName.Replace(" ", ""));
@@ -61,23 +71,23 @@ public class ItemBar : MonoBehaviour
                 if (itemSprite != null)
                 {
                     Debug.Log($"Loaded sprite: {itemName}");
-                    slotImage.sprite = itemSprite;
-                    slotImage.color = Color.white;
+                    itemIconImage.sprite = itemSprite;
+                    itemIconImage.color = Color.white;
                 }
                 else
                 {
                     Debug.Log($"Failed to load sprite: {itemName}");
-                    slotImage.sprite = null;
-                    slotImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+                    itemIconImage.sprite = null;
+                    itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
                 }
                 quantityText.text = inventoryItems[i].Value.ToString();
             }
             else
             {
-                slotImage.sprite = null;
-                slotImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+                itemIconImage.sprite = null;
+                itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
                 quantityText.text = "";
             }
         }
-    }
+    } 
 }

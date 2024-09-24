@@ -39,11 +39,11 @@ public class PlayerInventory : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.Tab))
         {
             ToggleInventory();
         }
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.B))
         {
             ToggleBuildingMenu();
         }
@@ -68,48 +68,61 @@ public class PlayerInventory : MonoBehaviour
         if (itemBar != null) itemBar.UpdateItemBar(); // Add this line
     }
 
-    private void UpdateInventoryDisplay()
+private void UpdateInventoryDisplay()
+{
+    if (inventoryItemsContainer != null)
     {
-        if (inventoryItemsContainer != null)
+        // Clear existing inventory items
+        foreach (GameObject item in inventoryItemObjects)
         {
-            // Clear existing inventory items
-            foreach (GameObject item in inventoryItemObjects)
+            Destroy(item);
+        }
+        inventoryItemObjects.Clear();
+
+        // Create new inventory items
+        int columns = 10; // Number of columns in the inventory grid
+        int rows = Mathf.CeilToInt(inventory.Count / (float)columns);
+        float spacing = 5f; // Spacing between items
+        float slotSize = 50f; // Size of each item slot
+
+        for (int i = 0; i < inventory.Count; i++)
+        {
+            var item = inventory.ElementAt(i);
+            GameObject newItem = Instantiate(inventoryItemPrefab, inventoryItemsContainer);
+            RectTransform rectTransform = newItem.GetComponent<RectTransform>();
+            rectTransform.sizeDelta = new Vector2(slotSize, slotSize);
+
+            int row = i / columns;
+            int column = i % columns;
+            rectTransform.anchoredPosition = new Vector2(column * (slotSize + spacing), -row * (slotSize + spacing));
+
+            Image itemImage = newItem.GetComponent<Image>();
+            TextMeshProUGUI quantityText = newItem.GetComponentInChildren<TextMeshProUGUI>();
+
+            string formattedName = item.Key.Replace(" ", "_");
+            Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
+
+            if (itemSprite == null)
             {
-                Destroy(item);
+                itemSprite = Resources.Load<Sprite>("Images/" + item.Key.Replace(" ", ""));
             }
-            inventoryItemObjects.Clear();
 
-            // Create new inventory items
-            foreach (var item in inventory)
+            if (itemSprite != null)
             {
-                GameObject newItem = Instantiate(inventoryItemPrefab, inventoryItemsContainer);
-                Image itemImage = newItem.GetComponent<Image>();
-                TextMeshProUGUI quantityText = newItem.GetComponentInChildren<TextMeshProUGUI>();
-
-                string formattedName = item.Key.Replace(" ", "_");
-                Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
-                
-                if (itemSprite == null)
-                {
-                    itemSprite = Resources.Load<Sprite>("Images/" + item.Key.Replace(" ", ""));
-                }
-
-                if (itemSprite != null)
-                {
-                    itemImage.sprite = itemSprite;
-                    itemImage.color = Color.white;
-                }
-                else
-                {
-                    Debug.Log($"Failed to load sprite: {item.Key}");
-                    itemImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-                }
-
-                quantityText.text = item.Value.ToString();
-                inventoryItemObjects.Add(newItem);
+                itemImage.sprite = itemSprite;
+                itemImage.color = Color.white;
             }
+            else
+            {
+                Debug.Log($"Failed to load sprite: {item.Key}");
+                itemImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+            }
+
+            quantityText.text = item.Value.ToString();
+            inventoryItemObjects.Add(newItem);
         }
     }
+}
 
     public int GetItemCount(string itemName)
     {

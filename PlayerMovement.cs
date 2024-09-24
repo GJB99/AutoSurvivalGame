@@ -76,15 +76,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
-    void InteractWithSmelter(Smelter smelter)
-    {
-    if (Input.GetMouseButtonDown(1)) // Right-click
-    {
-        ShowMessage(smelter.GetSmelterInfo());
-    }
-    }
-
     void HandleMouseInput()
     {
         Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -138,7 +129,7 @@ public class PlayerMovement : MonoBehaviour
 
     bool IsClickableObject(GameObject obj)
     {
-        return obj.GetComponent<Smelter>() != null; //
+        return obj.GetComponent<Smelter>() != null;
     }
 
     void InteractWithClickable(GameObject clickableObject)
@@ -146,7 +137,7 @@ public class PlayerMovement : MonoBehaviour
         if (clickableObject.TryGetComponent<Smelter>(out var smelter))
         {
             InteractWithSmelter(smelter);
-        }//
+        }
     }
 
     void HandleRightClick(Vector2 mouseWorldPosition, RaycastHit2D hit)
@@ -207,7 +198,7 @@ public class PlayerMovement : MonoBehaviour
         if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
         {
             isMoving = false;
-            
+
             if (currentResource != null && !isMining)
             {
                 if (currentResource.IsInMiningRange(transform.position))
@@ -322,5 +313,13 @@ public class PlayerMovement : MonoBehaviour
         isMining = true;
         isMoving = false;
         Debug.Log($"Started mining {currentResource.resourceName}");
+    }
+
+    void InteractWithSmelter(Smelter smelter)
+    {
+    if (Input.GetMouseButtonDown(1)) // Right-click
+    {
+        ShowMessage(smelter.GetSmelterInfo());
+    }
     }
 }
