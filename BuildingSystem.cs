@@ -73,9 +73,10 @@ public class BuildingSystem : MonoBehaviour
 
     IEnumerator TryBuildStonePickaxe()
     {
-        if (playerInventory.CanBuild("Rock", 5))
+        if (playerInventory.CanBuild("Rock", 5) && playerInventory.CanBuild("Wood", 5))
         {
             playerInventory.RemoveItems("Rock", 5);
+            playerInventory.RemoveItems("Wood", 5);
             ShowMessage("Crafting Stone Pickaxe...");
             yield return new WaitForSeconds(fabricationTime);
             playerInventory.AddItem("Stone Pickaxe", 1);
@@ -141,10 +142,10 @@ public class BuildingSystem : MonoBehaviour
 
     IEnumerator TryBuildDrill()
     {
-        if (playerInventory.CanBuild("Iron Ingot", 15) && playerInventory.CanBuild("Processor", 1))
+        if (playerInventory.CanBuild("Iron Ingot", 10) && playerInventory.CanBuild("Copper Ingot", 10))
         {
-            playerInventory.RemoveItems("Iron Ingot", 15);
-            playerInventory.RemoveItems("Processor", 1);
+            playerInventory.RemoveItems("Iron Ingot", 10);
+            playerInventory.RemoveItems("Copper Ingot", 10);
             ShowMessage("Fabricating Drill...");
             yield return new WaitForSeconds(fabricationTime);
             Vector3 spawnPosition = transform.position + transform.forward * 2f;
@@ -159,9 +160,10 @@ public class BuildingSystem : MonoBehaviour
 
     IEnumerator TryBuildConveyorBelt()
     {
-        if (playerInventory.CanBuild("Iron Ingot", 5))
+        if (playerInventory.CanBuild("Iron Ingot", 1) && playerInventory.CanBuild("Stone", 1))
         {
-            playerInventory.RemoveItems("Iron Ingot", 5);
+            playerInventory.RemoveItems("Iron Ingot", 1);
+            playerInventory.RemoveItems("Stone", 1);
             ShowMessage("Fabricating Conveyor Belt...");
             yield return new WaitForSeconds(fabricationTime);
             Vector3 spawnPosition = transform.position + transform.forward * 2f;
@@ -176,10 +178,11 @@ public class BuildingSystem : MonoBehaviour
 
     IEnumerator TryBuildCookingStation()
     {
-        if (playerInventory.CanBuild("Iron Ingot", 10) && playerInventory.CanBuild("Stone", 5))
+        if (playerInventory.CanBuild("Tin Ingot", 10) && playerInventory.CanBuild("Stone", 5) && playerInventory.CanBuild("Wood", 5))
         {
-            playerInventory.RemoveItems("Iron Ingot", 10);
+            playerInventory.RemoveItems("Tin Ingot", 10);
             playerInventory.RemoveItems("Stone", 5);
+            playerInventory.RemoveItems("Wood", 5);
             ShowMessage("Fabricating Cooking Station...");
             yield return new WaitForSeconds(fabricationTime);
             Vector3 spawnPosition = transform.position + transform.forward * 2f;

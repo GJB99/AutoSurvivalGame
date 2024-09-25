@@ -24,7 +24,7 @@ namespace YourGameNamespace
 
         public int worldSizeX = 200;
         public int worldSizeY = 200;
-        public float cellSize = 8f;
+        public float cellSize = 1f;
         public int minVeinSize = 10;
         public int maxVeinSize = 100;
         public int numberOfVeins = 100;

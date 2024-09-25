@@ -41,8 +41,7 @@ public class FoodBar : MonoBehaviour
 
     public void UpdateFoodBar()
     {
-        List<KeyValuePair<string, int>> inventoryItems = playerInventory.GetInventoryItems();
-        List<KeyValuePair<string, int>> foodItems = inventoryItems.FindAll(item => IsFoodItem(item.Key));
+        List<KeyValuePair<string, int>> foodItems = playerInventory.GetFoodBarItems();
 
         for (int i = 0; i < foodSlots.Count; i++)
         {

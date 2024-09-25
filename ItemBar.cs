@@ -41,7 +41,7 @@ public class ItemBar : MonoBehaviour
 
     public void UpdateItemBar()
     {
-        List<KeyValuePair<string, int>> inventoryItems = playerInventory.GetInventoryItems();
+        List<KeyValuePair<string, int>> itemBarItems = playerInventory.GetItemBarItems();
 
         for (int i = 0; i < itemSlots.Count; i++)
         {
@@ -56,9 +56,9 @@ public class ItemBar : MonoBehaviour
                 continue;
             }
 
-            if (i < inventoryItems.Count)
+            if (i < itemBarItems.Count)
             {
-                string itemName = inventoryItems[i].Key;
+                string itemName = itemBarItems[i].Key;
                 string formattedName = itemName.Replace(" ", "_");
                 Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
 
@@ -77,7 +77,7 @@ public class ItemBar : MonoBehaviour
                     Debug.Log($"Failed to load sprite: {itemName}");
                     itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
                 }
-                quantityText.text = inventoryItems[i].Value.ToString();
+                quantityText.text = itemBarItems[i].Value.ToString();
             }
             else
             {
