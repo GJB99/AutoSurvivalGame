@@ -76,6 +76,7 @@ namespace YourGameNamespace
 
             // Generate other resources
             GenerateSpecificResourceVein(centerTile, woodPrefab, BiomeType.Forest);
+            GenerateSpecificResourceVein(centerTile, herbPrefab, BiomeType.Forest);
             GenerateSpecificResourceVein(centerTile, rockPrefab, BiomeType.Forest);
             GenerateSpecificResourceVein(centerTile, copperPrefab, BiomeType.Desert);
             GenerateSpecificResourceVein(centerTile, ironPrefab, BiomeType.Desert);

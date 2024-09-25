@@ -273,7 +273,7 @@ public class PlayerMovement : MonoBehaviour
 
     bool CanMineWithCurrentTools(string resourceName)
     {
-        if (resourceName == "Rock")
+        if (resourceName == "Rock" || resourceName == "Wood" || resourceName == "Clay")
             return true;
         else if (resourceName == "Iron" && (inventory.HasStonePickaxe() || inventory.HasIronPickaxe()))
             return true;

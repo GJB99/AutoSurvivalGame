@@ -87,14 +87,77 @@ public class PlayerInventory : MonoBehaviour
     {
         bool itemAdded = false;
 
-        if (!itemAdded)
+        if (IsFoodItem(itemName))
+        {
+            // Try to add to FoodBar first
+            int foodBarSpace = foodBarCapacity - GetFoodBarItems().Sum(item => item.Value);
+            if (foodBarSpace > 0)
+            {
+                int amountToAdd = Mathf.Min(quantity, foodBarSpace);
+                AddToFoodBar(itemName, amountToAdd);
+                quantity -= amountToAdd;
+                itemAdded = true;
+            }
+
+            // If FoodBar is full or there's remaining quantity, try to add to ItemBar
+            if (quantity > 0)
+            {
+                int itemBarSpace = itemBarCapacity - GetItemBarItems().Sum(item => item.Value);
+                if (itemBarSpace > 0)
+                {
+                    int amountToAdd = Mathf.Min(quantity, itemBarSpace);
+                    AddToItemBar(itemName, amountToAdd);
+                    quantity -= amountToAdd;
+                    itemAdded = true;
+                }
+            }
+        }
+        else
+        {
+            // For non-food items, try to add to ItemBar first
+            int itemBarSpace = itemBarCapacity - GetItemBarItems().Sum(item => item.Value);
+            if (itemBarSpace > 0)
+            {
+                int amountToAdd = Mathf.Min(quantity, itemBarSpace);
+                AddToItemBar(itemName, amountToAdd);
+                quantity -= amountToAdd;
+                itemAdded = true;
+            }
+        }
+
+        // If there's still remaining quantity or item wasn't added to bars, add to main inventory
+        if (quantity > 0 || !itemAdded)
         {
             AddToMainInventory(itemName, quantity);
         }
-        
+
         UpdateInventoryDisplay();
         itemBar.UpdateItemBar();
         foodBar.UpdateFoodBar();
+    }
+
+    private void AddToFoodBar(string itemName, int quantity)
+    {
+        if (inventory.ContainsKey(itemName))
+        {
+            inventory[itemName] += quantity;
+        }
+        else
+        {
+            inventory[itemName] = quantity;
+        }
+    }
+
+    private void AddToItemBar(string itemName, int quantity)
+    {
+        if (inventory.ContainsKey(itemName))
+        {
+            inventory[itemName] += quantity;
+        }
+        else
+        {
+            inventory[itemName] = quantity;
+        }
     }
 
     private void AddToMainInventory(string itemName, int quantity)

@@ -9,6 +9,7 @@ public class ItemBar : MonoBehaviour
     public int numberOfSlots = 8;
     public PlayerInventory playerInventory;
     public float spacing = 10f;
+    public float scaleCoefficient = 1f;
 
     private List<GameObject> itemSlots = new List<GameObject>();
 
