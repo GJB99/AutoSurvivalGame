@@ -17,14 +17,25 @@ public class PlayerInventory : MonoBehaviour
     public GameObject inventoryItemPrefab;
     public Transform inventoryItemsContainer;
     private List<GameObject> inventoryItemObjects = new List<GameObject>();
+    private FoodBar foodBar;
+    public int itemBarCapacity = 10;
+    public int foodBarCapacity = 3;
 
     void Start()
     {
         if (inventoryUI != null) inventoryUI.SetActive(false);
         if (buildingMenuUI != null) buildingMenuUI.SetActive(false);
         itemBar = FindObjectOfType<ItemBar>();
+        foodBar = FindObjectOfType<FoodBar>();
         UpdateInventoryDisplay();
         UpdateBuildingMenuDisplay();
+    }
+
+    private bool IsFoodItem(string itemName)
+    {
+        // Add your food item names here
+        string[] foodItems = { "Apple", "Herb", "Carrot", "Bread", "Wheat", "Fish", "Herb" };
+        return System.Array.Exists(foodItems, food => food.Equals(itemName, System.StringComparison.OrdinalIgnoreCase));
     }
 
     public bool HasStonePickaxe()
@@ -49,12 +60,44 @@ public class PlayerInventory : MonoBehaviour
         }
     }
 
+    private List<KeyValuePair<string, int>> GetFoodBarItems()
+    {
+        if (foodBar == null)
+        {
+            return new List<KeyValuePair<string, int>>();
+        }
+        return inventory.Where(item => IsFoodItem(item.Key)).ToList();
+    }
+
+    private List<KeyValuePair<string, int>> GetItemBarItems()
+    {
+        if (itemBar == null)
+        {
+            return new List<KeyValuePair<string, int>>();
+        }
+        return inventory.Take(itemBarCapacity).ToList();
+    }
+
     public List<KeyValuePair<string, int>> GetInventoryItems()
     {
         return inventory.ToList();
     }
 
     public void AddItem(string itemName, int quantity)
+    {
+        bool itemAdded = false;
+
+        if (!itemAdded)
+        {
+            AddToMainInventory(itemName, quantity);
+        }
+        
+        UpdateInventoryDisplay();
+        itemBar.UpdateItemBar();
+        foodBar.UpdateFoodBar();
+    }
+
+    private void AddToMainInventory(string itemName, int quantity)
     {
         if (inventory.ContainsKey(itemName))
         {
@@ -64,65 +107,78 @@ public class PlayerInventory : MonoBehaviour
         {
             inventory[itemName] = quantity;
         }
-        UpdateInventoryDisplay();
-        if (itemBar != null) itemBar.UpdateItemBar(); // Add this line
     }
 
-private void UpdateInventoryDisplay()
-{
-    if (inventoryItemsContainer != null)
+    public void UpdateInventoryDisplay()
     {
-        // Clear existing inventory items
-        foreach (GameObject item in inventoryItemObjects)
+        if (inventoryItemsContainer != null)
         {
-            Destroy(item);
-        }
-        inventoryItemObjects.Clear();
-
-        // Create new inventory items
-        int columns = 10; // Number of columns in the inventory grid
-        int rows = Mathf.CeilToInt(inventory.Count / (float)columns);
-        float spacing = 5f; // Spacing between items
-        float slotSize = 50f; // Size of each item slot
-
-        for (int i = 0; i < inventory.Count; i++)
-        {
-            var item = inventory.ElementAt(i);
-            GameObject newItem = Instantiate(inventoryItemPrefab, inventoryItemsContainer);
-            RectTransform rectTransform = newItem.GetComponent<RectTransform>();
-            rectTransform.sizeDelta = new Vector2(slotSize, slotSize);
-
-            int row = i / columns;
-            int column = i % columns;
-            rectTransform.anchoredPosition = new Vector2(column * (slotSize + spacing), -row * (slotSize + spacing));
-
-            Image itemImage = newItem.GetComponent<Image>();
-            TextMeshProUGUI quantityText = newItem.GetComponentInChildren<TextMeshProUGUI>();
-
-            string formattedName = item.Key.Replace(" ", "_");
-            Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
-
-            if (itemSprite == null)
+            // Clear existing inventory items
+            foreach (GameObject item in inventoryItemObjects)
             {
-                itemSprite = Resources.Load<Sprite>("Images/" + item.Key.Replace(" ", ""));
+                Destroy(item);
             }
+            inventoryItemObjects.Clear();
 
-            if (itemSprite != null)
-            {
-                itemImage.sprite = itemSprite;
-                itemImage.color = Color.white;
-            }
-            else
-            {
-                Debug.Log($"Failed to load sprite: {item.Key}");
-                itemImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-            }
+            // Create new inventory items
+            int columns = 8; // Number of columns in the inventory grid
+            int rows = 3; // Number of rows in the inventory grid
+            float spacing = 10f; // Spacing between items
+            float slotSize = 75f; // Size of each item slot
 
-            quantityText.text = item.Value.ToString();
-            inventoryItemObjects.Add(newItem);
+            List<KeyValuePair<string, int>> inventoryItems = GetInventoryItems();
+            List<KeyValuePair<string, int>> foodBarItems = GetFoodBarItems();
+            List<KeyValuePair<string, int>> itemBarItems = GetItemBarItems();
+
+            int index = 0;
+            for (int i = 0; i < rows * columns && index < inventoryItems.Count; i++)
+            {
+                var item = inventoryItems[index];
+                
+                // Skip items that are in the FoodBar or ItemBar
+                if (foodBarItems.Any(x => x.Key == item.Key) || itemBarItems.Any(x => x.Key == item.Key))
+                {
+                    index++;
+                    i--;
+                    continue;
+                }
+
+                GameObject newItem = Instantiate(inventoryItemPrefab, inventoryItemsContainer);
+                RectTransform rectTransform = newItem.GetComponent<RectTransform>();
+                rectTransform.sizeDelta = new Vector2(slotSize, slotSize);
+
+                int row = i / columns;
+                int column = i % columns;
+                rectTransform.anchoredPosition = new Vector2(column * (slotSize + spacing), -row * (slotSize + spacing));
+
+                Image itemImage = newItem.transform.Find("ItemIcon").GetComponent<Image>();
+                TextMeshProUGUI quantityText = newItem.GetComponentInChildren<TextMeshProUGUI>();
+
+                string formattedName = item.Key.Replace(" ", "_");
+                Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
+
+                if (itemSprite == null)
+                {
+                    itemSprite = Resources.Load<Sprite>("Images/" + item.Key.Replace(" ", ""));
+                }
+
+                if (itemSprite != null)
+                {
+                    itemImage.sprite = itemSprite;
+                    itemImage.color = Color.white;
+                }
+                else
+                {
+                    Debug.Log($"Failed to load sprite: {item.Key}");
+                    itemImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+                }
+
+                quantityText.text = item.Value.ToString();
+                inventoryItemObjects.Add(newItem);
+                index++;
+            }
         }
     }
-}
 
     public int GetItemCount(string itemName)
     {

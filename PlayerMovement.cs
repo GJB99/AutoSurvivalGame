@@ -237,19 +237,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (currentResource != null && currentResource.IsInMiningRange(transform.position))
         {
-            bool canMine = false;
-            if (currentResource.resourceName == "Rock")
-            {
-                canMine = true;
-            }
-            else if (currentResource.resourceName == "Iron" && (inventory.HasStonePickaxe() || inventory.HasIronPickaxe()))
-            {
-                canMine = true;
-            }
-            else if (currentResource.resourceName == "Copper" && inventory.HasIronPickaxe())
-            {
-                canMine = true;
-            }
+            bool canMine = currentResource.isFood || CanMineWithCurrentTools(currentResource.resourceName);
 
             if (!canMine)
             {
@@ -281,6 +269,17 @@ public class PlayerMovement : MonoBehaviour
             currentResource = null;
             Debug.Log("No resource to mine");
         }
+    }
+
+    bool CanMineWithCurrentTools(string resourceName)
+    {
+        if (resourceName == "Rock")
+            return true;
+        else if (resourceName == "Iron" && (inventory.HasStonePickaxe() || inventory.HasIronPickaxe()))
+            return true;
+        else if (resourceName == "Copper" && inventory.HasIronPickaxe())
+            return true;
+        return false;
     }
 
     void MoveToResourceAndMine(Resource resource, Vector2 targetPoint)

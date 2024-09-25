@@ -9,6 +9,7 @@ public class Resource : MonoBehaviour
     public int currentQuantity;
     public float miningRange = 3f;
     public float cellSize = 1f;
+    public bool isFood = false;
 
     void Start()
     {

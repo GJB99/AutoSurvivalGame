@@ -8,6 +8,7 @@ public class UIManager : MonoBehaviour
     public GameObject craftingPanel;
     public GameObject minimapPanel;
     public GameObject itemBarPanel;
+    public GameObject foodBarPanel;
     public TextMeshProUGUI messageText;
 
     private PlayerInventory playerInventory;
@@ -22,6 +23,7 @@ public class UIManager : MonoBehaviour
         if (craftingPanel != null) craftingPanel.SetActive(false);
         if (minimapPanel != null) minimapPanel.SetActive(true);
         if (itemBarPanel != null) itemBarPanel.SetActive(true);
+        if (foodBarPanel != null) foodBarPanel.SetActive(true);
     }
 
     void Update()
@@ -40,10 +42,11 @@ public class UIManager : MonoBehaviour
     {
         if (inventoryPanel != null)
         {
-            inventoryPanel.SetActive(!inventoryPanel.activeSelf);
-            if (inventoryPanel.activeSelf)
+            bool isActive = !inventoryPanel.activeSelf;
+            inventoryPanel.SetActive(isActive);
+            if (isActive)
             {
-                UpdateInventoryDisplay();
+                playerInventory.UpdateInventoryDisplay();
             }
         }
     }
@@ -58,11 +61,6 @@ public class UIManager : MonoBehaviour
                 UpdateCraftingDisplay();
             }
         }
-    }
-
-    public void UpdateInventoryDisplay()
-    {
-        // Update inventory UI with items from playerInventory
     }
 
     public void UpdateCraftingDisplay()

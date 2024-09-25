@@ -103,6 +103,7 @@ MonoBehaviour:
   currentQuantity: 0
   miningRange: 1
   cellSize: 1
+  isFood: 1
 --- !u!58 &4844527449287361290
 CircleCollider2D:
   m_ObjectHideFlags: 0

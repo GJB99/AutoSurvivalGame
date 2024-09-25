@@ -3,61 +3,63 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
 
-public class ItemBar : MonoBehaviour
+public class FoodBar : MonoBehaviour
 {
-    public GameObject itemSlotPrefab;
-    public int numberOfSlots = 8;
+    public GameObject foodSlotPrefab;
+    public int numberOfSlots = 3;
     public PlayerInventory playerInventory;
     public float spacing = 10f;
+    public float scaleCoefficient = 1f;
 
-    private List<GameObject> itemSlots = new List<GameObject>();
+    private List<GameObject> foodSlots = new List<GameObject>();
 
     void Start()
     {
-        CreateItemSlots();
-        UpdateItemBar();
+        CreateFoodSlots();
+        UpdateFoodBar();
     }
 
-    void CreateItemSlots()
+    void CreateFoodSlots()
     {
-        RectTransform prefabRectTransform = itemSlotPrefab.GetComponent<RectTransform>();
+        RectTransform prefabRectTransform = foodSlotPrefab.GetComponent<RectTransform>();
         float slotWidth = prefabRectTransform.rect.width * scaleCoefficient;
         float slotHeight = prefabRectTransform.rect.height * scaleCoefficient;
-        float posY = prefabRectTransform.anchoredPosition.y - 60f; // Move the item bar down to make room for the food bar
+        float posY = prefabRectTransform.anchoredPosition.y;
 
         float totalWidth = (slotWidth * numberOfSlots) + (spacing * (numberOfSlots - 1));
         float startX = -totalWidth / 2 + slotWidth / 2;
 
         for (int i = 0; i < numberOfSlots; i++)
         {
-            GameObject slot = Instantiate(itemSlotPrefab, transform);
+            GameObject slot = Instantiate(foodSlotPrefab, transform);
             RectTransform slotRectTransform = slot.GetComponent<RectTransform>();
             slotRectTransform.anchoredPosition = new Vector2(startX + i * (slotWidth + spacing), posY);
             slotRectTransform.sizeDelta = new Vector2(slotWidth, slotHeight);
-            itemSlots.Add(slot);
+            foodSlots.Add(slot);
         }
     }
 
-    public void UpdateItemBar()
+    public void UpdateFoodBar()
     {
         List<KeyValuePair<string, int>> inventoryItems = playerInventory.GetInventoryItems();
+        List<KeyValuePair<string, int>> foodItems = inventoryItems.FindAll(item => IsFoodItem(item.Key));
 
-        for (int i = 0; i < itemSlots.Count; i++)
+        for (int i = 0; i < foodSlots.Count; i++)
         {
-            Image slotBackgroundImage = itemSlots[i].GetComponent<Image>();
-            Transform itemIconTransform = itemSlots[i].transform.Find("ItemIcon");
+            Image slotBackgroundImage = foodSlots[i].GetComponent<Image>();
+            Transform itemIconTransform = foodSlots[i].transform.Find("ItemIcon");
             Image itemIconImage = itemIconTransform != null ? itemIconTransform.GetComponent<Image>() : null;
-            TextMeshProUGUI quantityText = itemSlots[i].GetComponentInChildren<TextMeshProUGUI>();
+            TextMeshProUGUI quantityText = foodSlots[i].GetComponentInChildren<TextMeshProUGUI>();
 
             if (itemIconImage == null)
             {
-                Debug.LogError("ItemIcon Image component not found in ItemSlot prefab.");
+                Debug.LogError("ItemIcon Image component not found in FoodSlot prefab.");
                 continue;
             }
 
-            if (i < inventoryItems.Count)
+            if (i < foodItems.Count)
             {
-                string itemName = inventoryItems[i].Key;
+                string itemName = foodItems[i].Key;
                 string formattedName = itemName.Replace(" ", "_");
                 Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
 
@@ -74,9 +76,10 @@ public class ItemBar : MonoBehaviour
                 else
                 {
                     Debug.Log($"Failed to load sprite: {itemName}");
+                    itemIconImage.sprite = null;
                     itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
                 }
-                quantityText.text = inventoryItems[i].Value.ToString();
+                quantityText.text = foodItems[i].Value.ToString();
             }
             else
             {
@@ -85,5 +88,12 @@ public class ItemBar : MonoBehaviour
                 quantityText.text = "";
             }
         }
+    }
+
+    private bool IsFoodItem(string itemName)
+    {
+        // Add your food item names here
+        string[] foodItems = { "Apple", "Carrot", "Wheat", "Herb", "Bread", "Meat", "Fish" };
+        return System.Array.Exists(foodItems, food => food.Equals(itemName, System.StringComparison.OrdinalIgnoreCase));
     }
 }
