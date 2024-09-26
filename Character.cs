@@ -42,6 +42,8 @@ public class Character : MonoBehaviour
     public int magicResistance = 0;
     public int fireResistance = 0;
     public int coldResistance = 0;
+    public int lightResistance = 0;
+    public int necroticResistance = 0;
     public int mana = 100;
     public int strength = 10;
     public int agility = 10;
