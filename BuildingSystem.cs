@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using TMPro;
+using UnityEngine.UI;
 
 public class BuildingSystem : MonoBehaviour
 {
@@ -15,9 +16,91 @@ public class BuildingSystem : MonoBehaviour
     public float messageDisplayTime = 2f;
     public float fabricationTime = 1f; // Time to fabricate an item
 
-    void Start()
+    [Header("UI Elements")]
+    public GameObject buildingMenuPanel;
+    public Button gearWeaponsButton;
+    public Button factoriesAutomationButton;
+    public Button componentsButton;
+    public Button transportButton;
+    public Button baseStationsButton;
+    public Button foodButton;
+
+    private void Start()
     {
         playerInventory = GetComponent<PlayerInventory>();
+        SetupButtonListeners();
+    }
+
+    private void SetupButtonListeners()
+    {
+        if (gearWeaponsButton != null)
+            gearWeaponsButton.onClick.AddListener(() => ShowBuildingCategory("Gear"));
+        if (factoriesAutomationButton != null)
+            factoriesAutomationButton.onClick.AddListener(() => ShowBuildingCategory("Auto"));
+        if (componentsButton != null)
+            componentsButton.onClick.AddListener(() => ShowBuildingCategory("Comps"));
+        if (transportButton != null)
+            transportButton.onClick.AddListener(() => ShowBuildingCategory("Transport"));
+        if (baseStationsButton != null)
+            baseStationsButton.onClick.AddListener(() => ShowBuildingCategory("Base"));
+        if (foodButton != null)
+            foodButton.onClick.AddListener(() => ShowBuildingCategory("Food"));
+    }
+
+    public void ShowBuildingCategory(string category)
+    {
+        gearWeaponsPanel.SetActive(false);
+        autoPlantPanel.SetActive(false);
+        componentsPanel.SetActive(false);
+        transportPanel.SetActive(false);
+        baseStationsPanel.SetActive(false);
+        foodPanel.SetActive(false);
+
+        switch (category)
+        {
+            case "Gear":
+                gearWeaponsPanel.SetActive(true);
+                break;
+            case "Auto":
+                autoPlantPanel.SetActive(true);
+                break;
+            case "Comps":
+                componentsPanel.SetActive(true);
+                break;
+            case "Transport":
+                transportPanel.SetActive(true);
+                break;
+            case "Base":
+                baseStationsPanel.SetActive(true);
+                break;
+            case "Food":
+                foodPanel.SetActive(true);
+                break;
+        }
+
+        Debug.Log($"Opening building category: {category}");
+    }
+
+    public void ToggleBuildingMenu()
+    {
+        if (buildingMenuPanel != null)
+        {
+            buildingMenuPanel.SetActive(!buildingMenuPanel.activeSelf);
+        }
+    }
+
+    [Header("Building Category Panels")]
+    public GameObject gearWeaponsPanel;
+    public GameObject autoPlantPanel;
+    public GameObject componentsPanel;
+    public GameObject transportPanel;
+    public GameObject baseStationsPanel;
+    public GameObject foodPanel;
+
+    private void OpenBuildingCategory(string category)
+    {
+        ShowBuildingCategory(category);
+        Debug.Log($"Opening building category: {category}");
     }
 
     void Update()

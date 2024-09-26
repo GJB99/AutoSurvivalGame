@@ -10,20 +10,26 @@ public class UIManager : MonoBehaviour
     public GameObject itemBarPanel;
     public GameObject foodBarPanel;
     public TextMeshProUGUI messageText;
+    public GameObject characterPanel;
 
     private PlayerInventory playerInventory;
     private MessageManager messageManager;
+    private Character characterScript;
+    private BuildingSystem buildingSystem;  // Add this line
 
     void Start()
     {
         playerInventory = FindObjectOfType<PlayerInventory>();
         messageManager = FindObjectOfType<MessageManager>();
+        characterScript = FindObjectOfType<Character>();
+        buildingSystem = FindObjectOfType<BuildingSystem>();  // Add this line
 
         if (inventoryPanel != null) inventoryPanel.SetActive(false);
         if (craftingPanel != null) craftingPanel.SetActive(false);
         if (minimapPanel != null) minimapPanel.SetActive(true);
         if (itemBarPanel != null) itemBarPanel.SetActive(true);
         if (foodBarPanel != null) foodBarPanel.SetActive(true);
+        if (characterPanel != null) characterPanel.SetActive(false);
     }
 
     void Update()
@@ -34,7 +40,11 @@ public class UIManager : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.B))
         {
-            ToggleCrafting();
+            ToggleBuildingMenu();  // Changed from ToggleCrafting
+        }
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            ToggleCharacter();
         }
     }
 
@@ -76,6 +86,33 @@ public class UIManager : MonoBehaviour
             CancelInvoke("ClearMessage");
             Invoke("ClearMessage", 2f);
         }
+    }
+
+    public void ToggleCharacter()
+    {
+        if (characterPanel != null)
+        {
+            bool isActive = !characterPanel.activeSelf;
+            characterPanel.SetActive(isActive);
+            if (isActive && characterScript != null)
+            {
+                characterScript.UpdateStatsDisplay();
+            }
+        }
+    }
+
+    public void ToggleBuildingMenu()
+    {
+        if (buildingSystem != null)
+        {
+            buildingSystem.ToggleBuildingMenu();
+        }
+    }
+
+    private void UpdateCharacterDisplay()
+    {
+        // Update character UI with current gear, skills, powers, minions, and stats
+        // You'll need to implement this method based on your game's specific requirements
     }
 
     void ClearMessage()
