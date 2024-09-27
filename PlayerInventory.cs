@@ -23,6 +23,8 @@ public class PlayerInventory : MonoBehaviour
     private FoodBar foodBar;
     public int itemBarCapacity = 5;
     public int foodBarCapacity = 3;
+    public delegate void InventoryChangedHandler();
+    public event InventoryChangedHandler OnInventoryChanged;
 
     void Start()
     {
@@ -80,6 +82,8 @@ public class PlayerInventory : MonoBehaviour
 
     public void AddItem(string itemName, int quantity)
     {
+        Debug.Log($"Adding item: {itemName}, Quantity: {quantity}");
+
         if (IsFoodItem(itemName))
         {
             int foodBarSpace = foodBarCapacity - foodBarItems.Count;
@@ -89,6 +93,7 @@ public class PlayerInventory : MonoBehaviour
             {
                 AddToFoodBar(itemName, amountToAdd);
                 quantity -= amountToAdd;
+                Debug.Log($"Added {amountToAdd} {itemName} to food bar. Remaining: {quantity}");
             }
         }
 
@@ -96,29 +101,32 @@ public class PlayerInventory : MonoBehaviour
         {
             int itemBarSpace = itemBarCapacity - itemBarItems.Count;
             
-            if (itemBarSpace > 0 || itemBarItems.ContainsKey(itemName))
+            if (itemBarItems.ContainsKey(itemName))
             {
-                if (itemBarItems.ContainsKey(itemName))
-                {
-                    AddToItemBar(itemName, quantity);
-                    quantity = 0;
-                }
-                else
-                {
-                    AddToItemBar(itemName, 1);
-                    quantity--;
-                }
+                int spaceInExistingSlot = int.MaxValue - itemBarItems[itemName];
+                int amountToAdd = Mathf.Min(quantity, spaceInExistingSlot);
+                AddToItemBar(itemName, amountToAdd);
+                quantity -= amountToAdd;
+                Debug.Log($"Added {amountToAdd} {itemName} to existing item bar slot. Remaining: {quantity}");
+            }
+            else if (itemBarSpace > 0)
+            {
+                AddToItemBar(itemName, 1);
+                quantity--;
+                Debug.Log($"Added 1 {itemName} to new item bar slot. Remaining: {quantity}");
             }
         }
 
         if (quantity > 0)
         {
             AddToMainInventory(itemName, quantity);
+            Debug.Log($"Added {quantity} {itemName} to main inventory.");
         }
 
         UpdateInventoryDisplay();
         itemBar.UpdateItemBar();
         foodBar.UpdateFoodBar();
+        OnInventoryChanged?.Invoke();
     }
 
     private void AddToFoodBar(string itemName, int quantity)
@@ -161,6 +169,12 @@ public class PlayerInventory : MonoBehaviour
     public void UpdateInventoryDisplay()
     {
         Debug.Log("=== UpdateInventoryDisplay Start ===");
+        Debug.Log("Main Inventory Contents:");
+        foreach (var item in mainInventory)
+        {
+            Debug.Log($"{item.Key}: {item.Value}");
+        }
+
 
         if (inventoryItemsContainer == null)
         {
@@ -195,23 +209,7 @@ public class PlayerInventory : MonoBehaviour
         gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         gridLayout.constraintCount = columns;
 
-        // Resize the inventory container
-        RectTransform containerRect = inventoryItemsContainer.GetComponent<RectTransform>();
-        float containerWidth = columns * (slotSize + spacing) - spacing;
-        float containerHeight = rows * (slotSize + spacing) - spacing;
-        containerRect.sizeDelta = new Vector2(containerWidth, containerHeight);
-
-        // Center the container in the inventoryUI
-        containerRect.anchorMin = new Vector2(0.5f, 0.5f);
-        containerRect.anchorMax = new Vector2(0.5f, 0.5f);
-        containerRect.anchoredPosition = Vector2.zero;
-
-        Debug.Log($"inventoryItemsContainer position: {containerRect.anchoredPosition}");
-        Debug.Log($"inventoryItemsContainer size: {containerRect.sizeDelta}");
-
         List<KeyValuePair<string, int>> inventoryItems = mainInventory.ToList();
-
-        Debug.Log($"Main inventory items: {inventoryItems.Count}");
 
         for (int i = 0; i < rows * columns; i++)
         {
@@ -257,6 +255,13 @@ public class PlayerInventory : MonoBehaviour
         Debug.Log($"Inventory display updated. Total slots: {inventoryItemObjects.Count}");
         LogInventoryContents();
         Debug.Log("=== UpdateInventoryDisplay End ===");
+    }
+
+    public void AddItemToMainInventoryForTesting(string itemName, int quantity)
+    {
+        AddToMainInventory(itemName, quantity);
+        Debug.Log($"Added {quantity} {itemName} to main inventory for testing.");
+        UpdateInventoryDisplay();
     }
 
     public int GetItemCount(string itemName)
@@ -312,11 +317,7 @@ public class PlayerInventory : MonoBehaviour
         if (buildingMenuText != null)
         {
             string displayText = "Building Menu:\n";
-            displayText += "1. Stone Pickaxe (5 Rock)\n";
-            displayText += "2. Iron Pickaxe (1 Stone Pickaxe, 10 Iron)\n";
-            displayText += "3. Smelter (5 Copper, 5 Iron, 10 Rock)\n";
-            displayText += "4. Processor (10 Iron Ingot, 10 Copper Ingot)\n";
-            displayText += "\nPress 1, 2, 3 or 4 to build";
+            displayText += "Click on items to view details and build";
             buildingMenuText.text = displayText;
         }
     }
@@ -370,6 +371,7 @@ public class PlayerInventory : MonoBehaviour
         UpdateInventoryDisplay();
         itemBar.UpdateItemBar();
         foodBar.UpdateFoodBar();
+        OnInventoryChanged?.Invoke();
     }
 
     private void LogInventoryContents()

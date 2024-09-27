@@ -6,7 +6,8 @@ namespace YourGameNamespace
     public class Minimap : MonoBehaviour
     {
         public RawImage minimapImage;
-        public int mapSize = 200;
+        public int mapWidth = 300; // Adjust this value based on your desired map size
+        public int mapHeight = 200;
         public Color groundColor = new Color(0.76f, 0.70f, 0.50f); // Desert color
         public Color copperColor = new Color(1f, 0.65f, 0f); // Orange
         public Color ironColor = new Color(0.75f, 0.75f, 0.8f); // Silver (grey/blueish)
@@ -43,8 +44,8 @@ namespace YourGameNamespace
             biomeManager = FindObjectOfType<BiomeManager>();
             playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
             lastPlayerPosition = playerTransform.position;
-            
-            minimapTexture = new Texture2D(mapSize, mapSize);
+
+            minimapTexture = new Texture2D(mapWidth, mapHeight);
             minimapImage.texture = minimapTexture;
 
             UpdateMinimap();
@@ -60,12 +61,12 @@ namespace YourGameNamespace
             int playerX = Mathf.RoundToInt(playerTransform.position.x / worldGenerator.cellSize);
             int playerY = Mathf.RoundToInt(playerTransform.position.y / worldGenerator.cellSize);
 
-            for (int y = 0; y < mapSize; y++)
+            for (int y = 0; y < mapHeight; y++)
             {
-                for (int x = 0; x < mapSize; x++)
+                for (int x = 0; x < mapWidth; x++)
                 {
-                    int worldX = playerX + x - mapSize / 2;
-                    int worldY = playerY + y - mapSize / 2;
+                    int worldX = playerX + x - mapWidth / 2;
+                    int worldY = playerY + y - mapHeight / 2;
 
                     Color pixelColor = GetBiomeColor(biomeManager.GetBiomeAt(worldX, worldY));
 
@@ -107,8 +108,8 @@ namespace YourGameNamespace
         void DrawPlayerIcon()
         {
             int iconSize = 10;
-            int centerX = mapSize / 2;
-            int centerY = mapSize / 2;
+            int centerX = mapWidth / 2;
+            int centerY = mapHeight / 2;
 
             Vector3 playerDirection = (playerTransform.position - lastPlayerPosition).normalized;
             float angle = Mathf.Atan2(playerDirection.y, playerDirection.x) * Mathf.Rad2Deg;
@@ -122,7 +123,7 @@ namespace YourGameNamespace
                     {
                         int pixelX = centerX + x;
                         int pixelY = centerY + y;
-                        if (pixelX >= 0 && pixelX < mapSize && pixelY >= 0 && pixelY < mapSize)
+                        if (pixelX >= 0 && pixelX < mapWidth && pixelY >= 0 && pixelY < mapHeight)
                         {
                             minimapTexture.SetPixel(pixelX, pixelY, Color.black);
                         }
@@ -139,7 +140,7 @@ namespace YourGameNamespace
                     {
                         int pixelX = centerX + x;
                         int pixelY = centerY + y;
-                        if (pixelX >= 0 && pixelX < mapSize && pixelY >= 0 && pixelY < mapSize)
+                        if (pixelX >= 0 && pixelX < mapWidth && pixelY >= 0 && pixelY < mapHeight)
                         {
                             minimapTexture.SetPixel(pixelX, pixelY, playerColor);
                         }
@@ -175,12 +176,12 @@ namespace YourGameNamespace
         {
             if (minimapTexture == null)
             {
-                minimapTexture = new Texture2D(mapSize, mapSize);
+                minimapTexture = new Texture2D(mapWidth, mapHeight);
             }
 
-            for (int x = 0; x < mapSize; x++)
+            for (int x = 0; x < mapWidth; x++)
             {
-                for (int y = 0; y < mapSize; y++)
+                for (int y = 0; y < mapHeight; y++)
                 {
                     Vector2Int worldPos = new Vector2Int(x, y);
                     BiomeType biomeType = worldGenerator.biomeManager.GetBiomeAt(x, y);
@@ -242,8 +243,8 @@ namespace YourGameNamespace
             biomeManager = FindObjectOfType<BiomeManager>();
             playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
             lastPlayerPosition = playerTransform.position;
-            
-            minimapTexture = new Texture2D(mapSize, mapSize);
+
+            minimapTexture = new Texture2D(mapWidth, mapHeight);
             minimapImage.texture = minimapTexture;
 
             UpdateMinimap();

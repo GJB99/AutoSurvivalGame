@@ -6,7 +6,7 @@ using TMPro;
 public class ItemBar : MonoBehaviour
 {
     public GameObject itemSlotPrefab;
-    public int numberOfSlots = 8;
+    public int numberOfSlots = 5;
     public PlayerInventory playerInventory;
     public float spacing = 10f;
     public float scaleCoefficient = 1f;
