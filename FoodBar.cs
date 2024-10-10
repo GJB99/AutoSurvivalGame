@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.EventSystems;
 
 public class FoodBar : MonoBehaviour
 {
@@ -42,6 +43,23 @@ public class FoodBar : MonoBehaviour
     public void UpdateFoodBar()
     {
         List<KeyValuePair<string, int>> foodItems = playerInventory.GetFoodBarItems();
+
+        // Clear existing items
+        foreach (GameObject slot in foodSlots)
+        {
+            Transform itemIconTransform = slot.transform.Find("ItemIcon");
+            if (itemIconTransform != null)
+            {
+                Image itemIconImage = itemIconTransform.GetComponent<Image>();
+                itemIconImage.sprite = null;
+                itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+            }
+            TextMeshProUGUI quantityText = slot.GetComponentInChildren<TextMeshProUGUI>();
+            if (quantityText != null)
+            {
+                quantityText.text = "";
+            }
+        }
 
         for (int i = 0; i < foodSlots.Count; i++)
         {

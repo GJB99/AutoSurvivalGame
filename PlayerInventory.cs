@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class PlayerInventory : MonoBehaviour
 {
@@ -16,15 +17,33 @@ public class PlayerInventory : MonoBehaviour
     public TextMeshProUGUI buildingMenuText;
     private bool isInventoryVisible = false;
     private bool isBuildingMenuVisible = false;
-    private ItemBar itemBar;
+    public ItemBar itemBar;
     public GameObject inventoryItemPrefab;
     public Transform inventoryItemsContainer;
     private List<GameObject> inventoryItemObjects = new List<GameObject>();
-    private FoodBar foodBar;
+    public FoodBar foodBar;
     public int itemBarCapacity = 5;
     public int foodBarCapacity = 3;
     public delegate void InventoryChangedHandler();
     public event InventoryChangedHandler OnInventoryChanged;
+
+    public bool IsFood(string itemName)
+{
+    // Implement your logic to determine if an item is food
+    // For example, you could have a list of food items or a property on the item itself
+    List<string> foodItems = new List<string> { "Apple", "Bread", "Fish" }; // Add your food items here
+    return foodItems.Contains(itemName);
+}
+
+    public void UpdateItemBar()
+    {
+        itemBar.UpdateItemBar();
+    }
+
+    public void UpdateFoodBar()
+    {
+        foodBar.UpdateFoodBar();
+    }
 
     void Start()
     {
@@ -36,6 +55,63 @@ public class PlayerInventory : MonoBehaviour
         UpdateBuildingMenuDisplay();
     }
 
+public bool MoveItem(string itemName, int amount, string fromContainer, string toContainer)
+{
+    Dictionary<string, int> sourceContainer = GetContainer(fromContainer);
+    Dictionary<string, int> targetContainer = GetContainer(toContainer);
+
+    if (sourceContainer == null || targetContainer == null)
+    {
+        Debug.LogError($"Invalid container: {fromContainer} or {toContainer}");
+        return false;
+    }
+
+    if (!sourceContainer.ContainsKey(itemName) || sourceContainer[itemName] < amount)
+    {
+        Debug.LogError($"Not enough {itemName} in {fromContainer}");
+        return false;
+    }
+
+    sourceContainer[itemName] -= amount;
+    if (sourceContainer[itemName] <= 0)
+    {
+        sourceContainer.Remove(itemName);
+    }
+
+    if (targetContainer.ContainsKey(itemName))
+    {
+        targetContainer[itemName] += amount;
+    }
+    else
+    {
+        targetContainer[itemName] = amount;
+    }
+
+    OnInventoryChanged?.Invoke();
+    return true;
+}
+
+    public int GetItemCount(string itemName, string containerName)
+    {
+        Dictionary<string, int> container = GetContainer(containerName);
+        return container.ContainsKey(itemName) ? container[itemName] : 0;
+    }  
+
+    private Dictionary<string, int> GetContainer(string containerName)
+    {
+        switch (containerName)
+        {
+            case "FoodBar":
+                return foodBarItems;
+            case "ItemBar":
+                return itemBarItems;
+            case "MainInventory":
+                return mainInventory;
+            default:
+                return null;
+        }
+    }
+
     private bool IsFoodItem(string itemName)
     {
         // Add your food item names here
@@ -45,12 +121,12 @@ public class PlayerInventory : MonoBehaviour
 
     public bool HasStonePickaxe()
     {
-        return GetItemCount("Stone Pickaxe") > 0;
+        return GetItemCount("Stone Pickaxe", "MainInventory") > 0;
     }
 
     public bool HasIronPickaxe()
     {
-        return GetItemCount("Iron Pickaxe") > 0;
+        return GetItemCount("Iron Pickaxe", "MainInventory") > 0;
     }
 
     void Update()
@@ -155,15 +231,45 @@ public class PlayerInventory : MonoBehaviour
 
     private void AddToMainInventory(string itemName, int quantity)
     {
+        const int MAX_STACK = 999;
+
         if (mainInventory.ContainsKey(itemName))
         {
-            mainInventory[itemName] += quantity;
+            int currentAmount = mainInventory[itemName];
+            int spaceLeft = MAX_STACK - currentAmount;
+            int amountToAdd = Mathf.Min(quantity, spaceLeft);
+
+            mainInventory[itemName] += amountToAdd;
+            quantity -= amountToAdd;
         }
-        else
+
+        if (quantity > 0)
         {
-            mainInventory[itemName] = quantity;
-        }    
-        Debug.Log($"Added {quantity} {itemName} to main inventory. Total: {mainInventory[itemName]}");
+            if (!itemBarItems.ContainsKey(itemName) && itemBarItems.Count < itemBarCapacity)
+            {
+                itemBarItems[itemName] = quantity;
+            }
+            else if (!foodBarItems.ContainsKey(itemName) && foodBarItems.Count < foodBarCapacity && IsFoodItem(itemName))
+            {
+                foodBarItems[itemName] = quantity;
+            }
+            else
+            {
+                if (!mainInventory.ContainsKey(itemName))
+                {
+                    mainInventory[itemName] = quantity;
+                }
+                else
+                {
+                    mainInventory[itemName] += quantity;
+                }
+            }
+        }
+
+        UpdateInventoryDisplay();
+        itemBar.UpdateItemBar();
+        foodBar.UpdateFoodBar();
+        OnInventoryChanged?.Invoke();
     }
 
     public void UpdateInventoryDisplay()
@@ -264,23 +370,6 @@ public class PlayerInventory : MonoBehaviour
         UpdateInventoryDisplay();
     }
 
-    public int GetItemCount(string itemName)
-    {
-        int count = 0;
-
-        if (foodBarItems.ContainsKey(itemName))
-            count += foodBarItems[itemName];
-
-        if (itemBarItems.ContainsKey(itemName))
-            count += itemBarItems[itemName];
-
-        if (mainInventory.ContainsKey(itemName))
-            count += mainInventory[itemName];
-
-        return count;
-    }
-
-
     public bool IsBuildingMenuVisible()
     {
         return isBuildingMenuVisible;
@@ -324,7 +413,9 @@ public class PlayerInventory : MonoBehaviour
 
     public bool CanBuild(string itemName, int cost)
     {
-        int totalItemCount = GetItemCount(itemName);
+        int totalItemCount = GetItemCount(itemName, "MainInventory") + 
+                            GetItemCount(itemName, "ItemBar") + 
+                            GetItemCount(itemName, "FoodBar");
         return totalItemCount >= cost;
     }
 
@@ -382,6 +473,13 @@ public class PlayerInventory : MonoBehaviour
             Debug.Log($"{item.Key}: {item.Value}");
         }
         Debug.Log("==========================");
+    }
+
+    public int GetTotalItemCount(string itemName)
+    {
+        return GetItemCount(itemName, "MainInventory") +
+               GetItemCount(itemName, "ItemBar") +
+               GetItemCount(itemName, "FoodBar");
     }
 
 }

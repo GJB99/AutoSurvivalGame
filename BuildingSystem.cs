@@ -357,6 +357,12 @@ public class BuildingSystem : MonoBehaviour
 
     private string FormatRequirement(int cost, string resource)
     {
+        if (string.IsNullOrEmpty(resource))
+        {
+            Debug.LogWarning($"Attempted to format requirement for null or empty resource with cost {cost}");
+            return "<color=red>Invalid Resource</color>";
+        }
+
         bool hasEnough = playerInventory.CanBuild(resource, cost);
         string color = hasEnough ? "white" : "red";
         return $"<color={color}>{cost} {resource}</color>";

@@ -5,6 +5,8 @@ public class SmelterPlacement : MonoBehaviour
     public GameObject smelterPrefab;
     private PlayerInventory playerInventory;
     private GameObject placementPreview;
+    public int ironOreRequired = 5;
+    public int coalRequired = 3;
 
     void Start()
     {
@@ -13,7 +15,7 @@ public class SmelterPlacement : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && playerInventory.GetItemCount("Smelter") > 0)
+        if (playerInventory.GetTotalItemCount("Iron Ore") >= ironOreRequired && playerInventory.GetTotalItemCount("Coal") >= coalRequired)
         {
             PlaceSmelter();
         }
@@ -23,7 +25,7 @@ public class SmelterPlacement : MonoBehaviour
 
     void UpdatePlacementPreview()
     {
-        if (playerInventory.GetItemCount("Smelter") > 0)
+        if (playerInventory.GetTotalItemCount("Iron Ore") >= ironOreRequired && playerInventory.GetTotalItemCount("Coal") >= coalRequired)
         {
             Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mousePosition.z = 0;

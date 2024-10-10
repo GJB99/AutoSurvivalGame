@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.EventSystems;
 
 public class ItemBar : MonoBehaviour
 {
@@ -45,16 +46,9 @@ public class ItemBar : MonoBehaviour
 
         for (int i = 0; i < itemSlots.Count; i++)
         {
-            Image slotBackgroundImage = itemSlots[i].GetComponent<Image>();
             Transform itemIconTransform = itemSlots[i].transform.Find("ItemIcon");
             Image itemIconImage = itemIconTransform != null ? itemIconTransform.GetComponent<Image>() : null;
             TextMeshProUGUI quantityText = itemSlots[i].GetComponentInChildren<TextMeshProUGUI>();
-
-            if (itemIconImage == null)
-            {
-                Debug.LogError("ItemIcon Image component not found in ItemSlot prefab.");
-                continue;
-            }
 
             if (i < itemBarItems.Count)
             {
@@ -71,13 +65,15 @@ public class ItemBar : MonoBehaviour
                 {
                     itemIconImage.sprite = itemSprite;
                     itemIconImage.color = Color.white;
+                    quantityText.text = itemBarItems[i].Value.ToString();
                 }
                 else
                 {
-                    Debug.Log($"Failed to load sprite: {itemName}");
+                    Debug.LogWarning($"Sprite not found for item: {itemName}");
+                    itemIconImage.sprite = null;
                     itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+                    quantityText.text = "";
                 }
-                quantityText.text = itemBarItems[i].Value.ToString();
             }
             else
             {
