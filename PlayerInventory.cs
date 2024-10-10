@@ -91,11 +91,20 @@ public bool MoveItem(string itemName, int amount, string fromContainer, string t
     return true;
 }
 
-    public int GetItemCount(string itemName, string containerName)
+public int GetItemCount(string itemName, string containerName)
+{
+    if (string.IsNullOrEmpty(itemName) || string.IsNullOrEmpty(containerName))
     {
-        Dictionary<string, int> container = GetContainer(containerName);
-        return container.ContainsKey(itemName) ? container[itemName] : 0;
-    }  
+        return 0;
+    }
+
+    Dictionary<string, int> container = GetContainer(containerName);
+    if (container != null && container.TryGetValue(itemName, out int count))
+    {
+        return count;
+    }
+    return 0;
+} 
 
     private Dictionary<string, int> GetContainer(string containerName)
     {

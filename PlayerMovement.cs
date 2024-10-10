@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using System.Collections;
 using System.Text.RegularExpressions;
+using static Resource;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class PlayerMovement : MonoBehaviour
     public Texture2D miningCursor;
     public Texture2D handCursor;
     public Texture2D defaultCursor;
+    public Texture2D hoeCursor;
+    public Texture2D selectingCursor;
 
     private Vector3 targetPosition;
     private bool isMoving = false;
@@ -36,45 +39,86 @@ public class PlayerMovement : MonoBehaviour
         Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
     }
 
-    void Update()
+void Update()
+{
+    HandleMouseInput();
+
+    if (isHoldingRightClick)
     {
-        HandleMouseInput();
+        Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        SetTargetPosition(mouseWorldPosition);
+    }
 
-        if (isHoldingRightClick)
+    // If the player is moving, stop mining
+    if (isMoving)
+    {
+        isMining = false;
+    }
+    else
+    {
+        // If player is not moving and trying to mine a resource
+        if (isMining && currentResource != null)
         {
-            Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            SetTargetPosition(mouseWorldPosition);
+            if (currentResource.IsInMiningRange(transform.position))
+            {
+                MineResource();
+            }
+            else
+            {
+                // Player is out of range, stop mining
+                isMining = false;
+                currentResource = null;
+                Debug.Log("Out of range for mining.");
+            }
         }
+    }
 
-        // If the player is moving, stop mining
-        if (isMoving)
+    if (isMoving)
+    {
+        MovePlayer();
+    }
+
+    // New cursor logic
+    UpdateCursor();
+}
+
+private void UpdateCursor()
+{
+    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+    RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+
+    if (hit.collider != null)
+    {
+        Resource resource = hit.collider.GetComponent<Resource>();
+        if (resource != null)
         {
-            isMining = false;
+            if (resource.resourceType == ResourceType.Food)
+            {
+                Cursor.SetCursor(hoeCursor, Vector2.zero, CursorMode.Auto);
+            }
+            else if (resource.isMineableResource())
+            {
+                Cursor.SetCursor(miningCursor, Vector2.zero, CursorMode.Auto);
+            }
+            else
+            {
+                Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+            }
+        }
+        else if (IsClickableObject(hit.collider.gameObject))
+        {
+            Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
         }
         else
         {
-            // If player is not moving and trying to mine a resource
-            if (isMining && currentResource != null)
-            {
-                if (currentResource.IsInMiningRange(transform.position))
-                {
-                    MineResource();
-                }
-                else
-                {
-                    // Player is out of range, stop mining
-                    isMining = false;
-                    currentResource = null;
-                    Debug.Log("Out of range for mining.");
-                }
-            }
-        }
-
-        if (isMoving)
-        {
-            MovePlayer();
+            Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
         }
     }
+    else
+    {
+        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+    }
+}
 
     void HandleMouseInput()
     {

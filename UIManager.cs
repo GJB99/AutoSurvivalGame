@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
+
 public class UIManager : MonoBehaviour
 {
     public GameObject inventoryPanel;
@@ -13,7 +14,8 @@ public class UIManager : MonoBehaviour
     public GameObject foodBarPanel;
     public TextMeshProUGUI messageText;
     public GameObject characterPanel;
-
+    public Texture2D selectingCursor;
+    public Texture2D defaultCursor;
     private PlayerInventory playerInventory;
     private MessageManager messageManager;
     private Character characterScript;
@@ -39,7 +41,74 @@ public class UIManager : MonoBehaviour
         if (characterPanel != null) characterPanel.SetActive(false);
 
         SetupContainerDragHandlers();
+        SetupInventoryItemHover();
     }
+
+private void SetupInventoryItemHover()
+{
+    SetupContainerItemHover(inventoryPanel);
+    SetupContainerItemHover(itemBarPanel);
+    SetupContainerItemHover(foodBarPanel);
+    SetupContainerItemHover(characterPanel);
+    SetupContainerItemHover(craftingPanel);
+}
+
+private void SetupContainerItemHover(GameObject container)
+{
+    if (container == null) return;
+
+    Transform contentHolder = container.transform.Find("Content") ?? container.transform;
+
+    foreach (Transform child in contentHolder)
+    {
+        if (child.GetComponent<Image>() != null)
+        {
+            SetupItemHover(child.gameObject);
+        }
+        else
+        {
+            foreach (Transform grandchild in child)
+            {
+                if (grandchild.GetComponent<Image>() != null)
+                {
+                    SetupItemHover(grandchild.gameObject);
+                }
+            }
+        }
+    }
+}
+
+private void SetupItemHover(GameObject item)
+{
+    EventTrigger trigger = item.GetComponent<EventTrigger>() ?? item.AddComponent<EventTrigger>();
+
+    EventTrigger.Entry enterEntry = new EventTrigger.Entry();
+    enterEntry.eventID = EventTriggerType.PointerEnter;
+    enterEntry.callback.AddListener((data) => { OnPointerEnterItem((PointerEventData)data); });
+    trigger.triggers.Add(enterEntry);
+
+    EventTrigger.Entry exitEntry = new EventTrigger.Entry();
+    exitEntry.eventID = EventTriggerType.PointerExit;
+    exitEntry.callback.AddListener((data) => { OnPointerExitItem((PointerEventData)data); });
+    trigger.triggers.Add(exitEntry);
+}
+
+private void OnPointerEnterItem(PointerEventData eventData)
+{
+    if (eventData.pointerEnter != null)
+    {
+        Image image = eventData.pointerEnter.GetComponent<Image>();
+        if (image != null && image.sprite != null)
+        {
+            Cursor.SetCursor(selectingCursor, Vector2.zero, CursorMode.Auto);
+        }
+    }
+}
+
+private void OnPointerExitItem(PointerEventData eventData)
+{
+    Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+}
 
     private void SetupContainerDragHandlers()
     {

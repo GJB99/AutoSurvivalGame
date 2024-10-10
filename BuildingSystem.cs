@@ -61,13 +61,19 @@ public class BuildingSystem : MonoBehaviour
         }
     }
 
-    private void UpdateUIOnInventoryChange()
+private void UpdateUIOnInventoryChange()
+{
+    if (buildingMenuPanel.activeSelf)
     {
-        if (buildingMenuPanel.activeSelf)
+        RefreshAllItemDetails();
+        if (!string.IsNullOrEmpty(lastSelectedItemName))
         {
-            RefreshAllItemDetails();
+            ShowItemDetails(lastSelectedItemName, lastSelectedCost1, lastSelectedResource1, 
+                            lastSelectedCost2, lastSelectedResource2, lastSelectedCost3, 
+                            lastSelectedResource3, lastSelectedRequiresStation, lastSelectedStationName);
         }
     }
+}
 
     private void SetupButtonListeners()
     {
@@ -127,14 +133,38 @@ public class BuildingSystem : MonoBehaviour
         Debug.Log($"Showing category: {category}");
     }
 
-    private void RefreshAllItemDetails()
+private void RefreshAllItemDetails()
+{
+    if (buildingMenuPanel == null) return;
+
+    foreach (Transform child in buildingMenuPanel.transform)
     {
-        RefreshCategoryItems(gearPanel);
-        RefreshCategoryItems(foodPanel);
-        RefreshCategoryItems(componentsPanel);
-        RefreshCategoryItems(basePanel);
-        RefreshCategoryItems(autoPanel);
+        Button itemButton = child.GetComponent<Button>();
+        if (itemButton == null) continue;
+
+        TextMeshProUGUI buildInfo = itemButton.transform.Find("BuildInfo")?.GetComponent<TextMeshProUGUI>();
+        if (buildInfo == null) continue;
+
+        string itemName = buildInfo.text;
+        int cost1 = 0, cost2 = 0, cost3 = 0;
+        string resource1 = null, resource2 = null, resource3 = null;
+        bool requiresStation = false;
+        string stationName = null;
+
+        ParseCost(itemButton.transform.Find("ItemCost1"), out cost1, out resource1);
+        ParseCost(itemButton.transform.Find("ItemCost2"), out cost2, out resource2);
+        ParseCost(itemButton.transform.Find("ItemCost3"), out cost3, out resource3);
+
+        TextMeshProUGUI stationRequirement = itemButton.transform.Find("StationRequirement")?.GetComponent<TextMeshProUGUI>();
+        if (stationRequirement != null && stationRequirement.gameObject.activeSelf)
+        {
+            requiresStation = true;
+            stationName = stationRequirement.text.Replace("Requires: ", "");
+        }
+
+        ShowItemDetails(itemName, cost1, resource1, cost2, resource2, cost3, resource3, requiresStation, stationName);
     }
+}
 
     private void RefreshCategoryItems(GameObject panel)
     {
@@ -180,20 +210,21 @@ public class BuildingSystem : MonoBehaviour
         }
     }
 
-    private void ParseCost(Transform costTransform, out int cost, out string resource)
+private void ParseCost(Transform costTransform, out int cost, out string resource)
+{
+    cost = 0;
+    resource = null;
+    if (costTransform == null) return;
+
+    TextMeshProUGUI costText = costTransform.GetComponent<TextMeshProUGUI>();
+    if (costText == null || string.IsNullOrEmpty(costText.text)) return;
+
+    string[] parts = costText.text.Split(' ');
+    if (parts.Length >= 2 && int.TryParse(parts[0], out cost))
     {
-        cost = 0;
-        resource = null;
-        if (costTransform != null && costTransform.gameObject.activeSelf)
-        {
-            string costText = costTransform.GetComponent<TextMeshProUGUI>().text;
-            string[] parts = costText.Split(' ');
-            if (parts.Length == 2 && int.TryParse(parts[0], out cost))
-            {
-                resource = parts[1];
-            }
-        }
+        resource = string.Join(" ", parts, 1, parts.Length - 1);
     }
+}
 
     private GameObject GetActivePanelForCategory(string category)
     {
@@ -315,8 +346,34 @@ public class BuildingSystem : MonoBehaviour
         itemButton.onClick.AddListener(() => ShowItemDetails(itemName, cost1, resource1, cost2, resource2, cost3, resource3, requiresStation, stationName));
     }
 
-    private void ShowItemDetails(string itemName, int cost1, string resource1, int cost2, string resource2, int cost3, string resource3, bool requiresStation, string stationName)
+private void ShowItemDetails(string itemName, int cost1, string resource1, int cost2, string resource2, int cost3, string resource3, bool requiresStation, string stationName)
+{
+    if (itemDetailsPanel != null && itemDetailsText != null)
     {
+        itemDetailsPanel.SetActive(true);
+        string details = $"<b>{itemName}</b>\n";
+        
+        List<string> requirements = new List<string>();
+        
+        requirements.Add(FormatRequirement(cost1, resource1));
+        if (cost2 > 0 && !string.IsNullOrEmpty(resource2))
+            requirements.Add(FormatRequirement(cost2, resource2));
+        if (cost3 > 0 && !string.IsNullOrEmpty(resource3))
+            requirements.Add(FormatRequirement(cost3, resource3));
+        
+        details += string.Join(", ", requirements);
+        
+        if (requiresStation)
+            details += $"\n<color=#FFD700>Requires: {stationName}</color>";
+
+        itemDetailsText.text = details;
+
+        bool canBuild = CanBuildItem(itemName, cost1, resource1, cost2, resource2, cost3, resource3);
+        buildButton.interactable = canBuild;
+        buildButton.onClick.RemoveAllListeners();
+        buildButton.onClick.AddListener(() => BuildItem(itemName, cost1, resource1, cost2, resource2, cost3, resource3));
+
+        // Update last selected item details
         lastSelectedItemName = itemName;
         lastSelectedCost1 = cost1;
         lastSelectedResource1 = resource1;
@@ -326,57 +383,30 @@ public class BuildingSystem : MonoBehaviour
         lastSelectedResource3 = resource3;
         lastSelectedRequiresStation = requiresStation;
         lastSelectedStationName = stationName;
-
-        if (itemDetailsPanel != null && itemDetailsText != null)
-        {
-            itemDetailsPanel.SetActive(true);
-            string details = $"<b>{itemName}</b>\n";
-            
-            List<string> requirements = new List<string>();
-            
-            requirements.Add(FormatRequirement(cost1, resource1));
-            if (cost2 > 0 && resource2 != null)
-                requirements.Add(FormatRequirement(cost2, resource2));
-            if (cost3 > 0 && resource3 != null)
-                requirements.Add(FormatRequirement(cost3, resource3));
-            
-            details += string.Join(", ", requirements);
-            
-            if (requiresStation)
-                details += $"\n<color=#FFD700>Requires: {stationName}</color>";
-
-            itemDetailsText.text = details;
-
-            // Enable or disable the build button based on whether the player can build the item
-            bool canBuild = CanBuildItem(itemName, cost1, resource1, cost2, resource2, cost3, resource3);
-            buildButton.interactable = canBuild;
-            buildButton.onClick.RemoveAllListeners();
-            buildButton.onClick.AddListener(() => BuildItem(itemName, cost1, resource1, cost2, resource2, cost3, resource3));
-        }
     }
+}
 
-    private string FormatRequirement(int cost, string resource)
+private string FormatRequirement(int cost, string resource)
+{
+    if (string.IsNullOrEmpty(resource) || cost <= 0)
     {
-        if (string.IsNullOrEmpty(resource))
-        {
-            Debug.LogWarning($"Attempted to format requirement for null or empty resource with cost {cost}");
-            return "<color=red>Invalid Resource</color>";
-        }
-
-        bool hasEnough = playerInventory.CanBuild(resource, cost);
-        string color = hasEnough ? "white" : "red";
-        return $"<color={color}>{cost} {resource}</color>";
+        return string.Empty;
     }
 
-    private bool CanBuildItem(string itemName, int cost1, string resource1, int cost2, string resource2, int cost3, string resource3)
-    {
-        bool canBuild = playerInventory.CanBuild(resource1, cost1);
-        if (cost2 > 0 && resource2 != null)
-            canBuild &= playerInventory.CanBuild(resource2, cost2);
-        if (cost3 > 0 && resource3 != null)
-            canBuild &= playerInventory.CanBuild(resource3, cost3);
-        return canBuild;
-    }
+    bool hasEnough = playerInventory.GetTotalItemCount(resource) >= cost;
+    string color = hasEnough ? "white" : "red";
+    return $"<color={color}>{cost} {resource}</color>";
+}
+
+private bool CanBuildItem(string itemName, int cost1, string resource1, int cost2, string resource2, int cost3, string resource3)
+{
+    bool canBuild = playerInventory.GetTotalItemCount(resource1) >= cost1;
+    if (cost2 > 0 && !string.IsNullOrEmpty(resource2))
+        canBuild &= playerInventory.GetTotalItemCount(resource2) >= cost2;
+    if (cost3 > 0 && !string.IsNullOrEmpty(resource3))
+        canBuild &= playerInventory.GetTotalItemCount(resource3) >= cost3;
+    return canBuild;
+}
 
     private void BuildItem(string itemName, int cost1, string resource1, int cost2, string resource2, int cost3, string resource3)
     {

@@ -11,12 +11,43 @@ public class Resource : MonoBehaviour
     public float cellSize = 1f;
     public bool isFood = false;
 
-    void Start()
+    public enum ResourceType
     {
-        SetResourceName();
-        initialQuantity = Random.Range(10, 51); // Adjust range as needed
-        currentQuantity = initialQuantity;
+        Food,
+        Minable,
+        Other
     }
+
+    public ResourceType resourceType;
+
+void Start()
+{
+    SetResourceName();
+    initialQuantity = Random.Range(10, 51); // Adjust range as needed
+    currentQuantity = initialQuantity;
+    DetermineResourceType();
+}
+
+void DetermineResourceType()
+{
+    if (isFood)
+    {
+        resourceType = ResourceType.Food;
+    }
+    else if (gameObject.tag != "Water" && gameObject.tag != "Mountain")
+    {
+        resourceType = ResourceType.Minable;
+    }
+    else
+    {
+        resourceType = ResourceType.Other;
+    }
+}
+
+public bool isMineableResource()
+{
+    return resourceType == ResourceType.Minable;
+}
 
     public bool IsInMiningRange(Vector3 playerPosition)
     {
