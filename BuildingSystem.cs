@@ -11,6 +11,7 @@ public class BuildingSystem : MonoBehaviour
     public GameObject drillPrefab;
     public GameObject conveyorBeltPrefab;
     public GameObject cookingStationPrefab;
+    public GameObject processorPrefab;
 
     private PlayerInventory playerInventory;
     public TextMeshProUGUI messageText;
@@ -39,6 +40,10 @@ public class BuildingSystem : MonoBehaviour
     public TextMeshProUGUI itemDetailsText;
     public Button buildButton;
 
+    public GameObject buildingPlacerPrefab;
+
+    private BuildingPlacer activeBuildingPlacer;
+
     private string lastSelectedItemName;
     private int lastSelectedCost1, lastSelectedCost2, lastSelectedCost3;
     private string lastSelectedResource1, lastSelectedResource2, lastSelectedResource3;
@@ -60,6 +65,54 @@ public class BuildingSystem : MonoBehaviour
             playerInventory.OnInventoryChanged -= UpdateUIOnInventoryChange;
         }
     }
+
+public void InitiateBuildingPlacement(string buildingName)
+{
+    GameObject buildingPrefab = GetBuildingPrefab(buildingName);
+    if (buildingPrefab != null)
+    {
+        if (activeBuildingPlacer != null)
+        {
+            Destroy(activeBuildingPlacer.gameObject);
+        }
+        GameObject placerObject = Instantiate(buildingPlacerPrefab);
+        activeBuildingPlacer = placerObject.GetComponent<BuildingPlacer>();
+        activeBuildingPlacer.Initialize(buildingPrefab, this);
+    }
+}
+
+private GameObject GetBuildingPrefab(string buildingName)
+{
+    switch (buildingName)
+    {
+        case "Smelter":
+            return smelterPrefab;
+        case "Cooking Station":
+            return cookingStationPrefab;
+        case "Processor":
+            return processorPrefab;
+        case "Drill":
+            return drillPrefab;
+        case "Conveyor":
+            return conveyorBeltPrefab;
+        default:
+            Debug.LogWarning($"Unknown building type: {buildingName}");
+            return null;
+    }
+}
+
+public void OnBuildingPlaced()
+{
+    // Handle successful building placement
+    // For example, remove resources from inventory
+    activeBuildingPlacer = null;
+}
+
+public void OnBuildingPlacementCancelled()
+{
+    // Handle cancelled building placement
+    activeBuildingPlacer = null;
+}
 
 private void UpdateUIOnInventoryChange()
 {
@@ -248,9 +301,9 @@ private void ParseCost(Transform costTransform, out int cost, out string resourc
 
     private void PopulateGearPanel()
     {
-        AddItemToPanel(gearPanel, "Stone Pickaxe", "Stone_Pickaxe", 5, "Rock", 5, "Wood");
-        AddItemToPanel(gearPanel, "Iron Pickaxe", "Iron_Pickaxe", 1, "Stone Pickaxe", 10, "Iron");
-        AddItemToPanel(gearPanel, "Wood Helmet", "Wood_Helmet", 10, "Wood", 3, "String");
+        AddItemToPanel(gearPanel, "Stone Pickaxe", "Stone Pickaxe", 5, "Rock", 5, "Wood");
+        AddItemToPanel(gearPanel, "Iron Pickaxe", "Iron Pickaxe", 1, "Stone Pickaxe", 10, "Iron");
+        AddItemToPanel(gearPanel, "Wood Helmet", "Wood Helmet", 10, "Wood", 3, "String");
         AddItemToPanel(gearPanel, "Bow", "Bow", 10, "Wood", 2, "String");
     }
 
@@ -262,15 +315,15 @@ private void ParseCost(Transform costTransform, out int cost, out string resourc
     private void PopulateComponentsPanel()
     {
         AddItemToPanel(componentsPanel, "String", "String", 1, "PlantFiber");
-        AddItemToPanel(componentsPanel, "Iron Ingot", "Iron_Ingot", 1, "Iron", 0, null, true, "Smelter");
-        AddItemToPanel(componentsPanel, "Copper Ingot", "Copper_Ingot", 1, "Copper", 0, null, true, "Smelter");
+        AddItemToPanel(componentsPanel, "Iron Ingot", "Iron Ingot", 1, "Iron", 0, null, true, "Smelter");
+        AddItemToPanel(componentsPanel, "Copper Ingot", "Copper Ingot", 1, "Copper", 0, null, true, "Smelter");
     }
 
     private void PopulateBasePanel()
     {
         AddItemToPanel(basePanel, "Smelter", "Smelter", 5, "Copper", 5, "Iron", false, null, 10, "Rock");
         AddItemToPanel(basePanel, "Processor", "Processor", 10, "Iron Ingot", 10, "Copper Ingot");
-        AddItemToPanel(basePanel, "Cooking Station", "Cooking_Station", 10, "Wood", 5, "Iron");
+        AddItemToPanel(basePanel, "Cooking Station", "Cooking Station", 10, "Wood", 5, "Iron");
     }
 
     private void PopulateAutoPanel()

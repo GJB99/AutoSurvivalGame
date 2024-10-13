@@ -87,7 +87,4 @@ public bool isMineableResource()
         // Perform any necessary cleanup here
         Destroy(gameObject);
     }
-
-    // Remove or comment out the OnMouseDown, OnTriggerEnter2D, OnCollisionEnter2D, and OnTriggerExit2D methods
-    // as they're not necessary for the current implementation and contain references to the non-existent player variable
 }

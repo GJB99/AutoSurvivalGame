@@ -128,15 +128,15 @@ public int GetItemCount(string itemName, string containerName)
         return System.Array.Exists(foodItems, food => food.Equals(itemName, System.StringComparison.OrdinalIgnoreCase));
     }
 
-    public bool HasStonePickaxe()
-    {
-        return GetItemCount("Stone Pickaxe", "MainInventory") > 0;
-    }
+public bool HasStonePickaxe()
+{
+    return GetItemCount("Stone Pickaxe", "MainInventory") > 0 || GetItemCount("Stone Pickaxe", "ItemBar") > 0;
+}
 
-    public bool HasIronPickaxe()
-    {
-        return GetItemCount("Iron Pickaxe", "MainInventory") > 0;
-    }
+public bool HasIronPickaxe()
+{
+    return GetItemCount("Iron Pickaxe", "MainInventory") > 0 || GetItemCount("Iron Pickaxe", "ItemBar") > 0;
+}
 
     void Update()
     {

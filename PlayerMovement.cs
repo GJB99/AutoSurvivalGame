@@ -315,16 +315,16 @@ private void UpdateCursor()
         }
     }
 
-    bool CanMineWithCurrentTools(string resourceName)
-    {
-        if (resourceName == "Rock" || resourceName == "Wood" || resourceName == "Clay" || resourceName == "Tin" || resourceName == "Uranium" || resourceName == "Scrap" || resourceName == "Oil" || resourceName == "Titanium")
-            return true;
-        else if (resourceName == "Iron" && (inventory.HasStonePickaxe() || inventory.HasIronPickaxe()))
-            return true;
-        else if (resourceName == "Copper" && inventory.HasIronPickaxe())
-            return true;
-        return false;
-    }
+bool CanMineWithCurrentTools(string resourceName)
+{
+    if (resourceName == "Rock" || resourceName == "Wood" || resourceName == "Clay" || resourceName == "Tin" || resourceName == "Uranium" || resourceName == "Scrap" || resourceName == "Oil" || resourceName == "Titanium")
+        return true;
+    else if (resourceName == "Iron" && (inventory.HasStonePickaxe() || inventory.HasIronPickaxe()))
+        return true;
+    else if (resourceName == "Copper" && inventory.HasIronPickaxe())
+        return true;
+    return false;
+}
 
     void MoveToResourceAndMine(Resource resource, Vector2 targetPoint)
     {

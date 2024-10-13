@@ -3157,6 +3157,8 @@ MonoBehaviour:
   miningCursor: {fileID: 2800000, guid: ff745c393d2247a49841776adcd9fae0, type: 3}
   handCursor: {fileID: 2800000, guid: 0bb6a4300f73fb04e88e724726431f17, type: 3}
   defaultCursor: {fileID: 2800000, guid: aff6b351fb1649842b15f4a048295658, type: 3}
+  hoeCursor: {fileID: 2800000, guid: 2e93a63862bf3604182dcf31cb297506, type: 3}
+  selectingCursor: {fileID: 2800000, guid: 0bb6a4300f73fb04e88e724726431f17, type: 3}
 --- !u!114 &511426193
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3173,8 +3175,10 @@ MonoBehaviour:
   buildingMenuUI: {fileID: 1284911069}
   inventoryText: {fileID: 1799111752}
   buildingMenuText: {fileID: 0}
+  itemBar: {fileID: 0}
   inventoryItemPrefab: {fileID: 1094164463703806785, guid: aa855eed9e83677418ddefe86fa4dc14, type: 3}
   inventoryItemsContainer: {fileID: 295528803}
+  foodBar: {fileID: 0}
   itemBarCapacity: 5
   foodBarCapacity: 3
 --- !u!114 &511426194
@@ -3194,6 +3198,7 @@ MonoBehaviour:
   drillPrefab: {fileID: 0}
   conveyorBeltPrefab: {fileID: 0}
   cookingStationPrefab: {fileID: 0}
+  processorPrefab: {fileID: 0}
   messageText: {fileID: 1040603363}
   messageDisplayTime: 2
   fabricationTime: 1
@@ -3214,6 +3219,7 @@ MonoBehaviour:
   itemDetailsPanel: {fileID: 1483234412}
   itemDetailsText: {fileID: 830939489}
   buildButton: {fileID: 1132412675}
+  buildingPlacerPrefab: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -8314,6 +8320,8 @@ MonoBehaviour:
   foodBarPanel: {fileID: 69671056}
   messageText: {fileID: 1040603363}
   characterPanel: {fileID: 1863745122}
+  selectingCursor: {fileID: 2800000, guid: 0bb6a4300f73fb04e88e724726431f17, type: 3}
+  defaultCursor: {fileID: 2800000, guid: aff6b351fb1649842b15f4a048295658, type: 3}
 --- !u!4 &1414780040
 Transform:
   m_ObjectHideFlags: 0
@@ -10860,7 +10868,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -11946,6 +11954,7 @@ MonoBehaviour:
   miningRange: 1
   cellSize: 1
   isFood: 0
+  resourceType: 0
 --- !u!212 &2102380929
 SpriteRenderer:
   m_ObjectHideFlags: 0
