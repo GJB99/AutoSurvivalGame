@@ -51,6 +51,7 @@ public class BuildingSystem : MonoBehaviour
     private string lastSelectedStationName;
 
     private UIManager uiManager;
+    private bool hasShownBuildingMenuMessage = false;
     
 
     private void Start()
@@ -465,24 +466,25 @@ private bool CanBuildItem(string itemName, int cost1, string resource1, int cost
     return canBuild;
 }
 
-    private void BuildItem(string itemName, int cost1, string resource1, int cost2, string resource2, int cost3, string resource3)
+private void BuildItem(string itemName, int cost1, string resource1, int cost2, string resource2, int cost3, string resource3)
+{
+    if (CanBuildItem(itemName, cost1, resource1, cost2, resource2, cost3, resource3))
     {
-        if (CanBuildItem(itemName, cost1, resource1, cost2, resource2, cost3, resource3))
-        {
-            playerInventory.RemoveItems(resource1, cost1);
-            if (cost2 > 0 && resource2 != null)
-                playerInventory.RemoveItems(resource2, cost2);
-            if (cost3 > 0 && resource3 != null)
-                playerInventory.RemoveItems(resource3, cost3);
+        playerInventory.RemoveItems(resource1, cost1);
+        if (cost2 > 0 && resource2 != null)
+            playerInventory.RemoveItems(resource2, cost2);
+        if (cost3 > 0 && resource3 != null)
+            playerInventory.RemoveItems(resource3, cost3);
 
-            playerInventory.AddItem(itemName, 1);
-            uiManager.ShowLowerMessage($"Built 1 {itemName}");
-        }
-        else
-        {
-            uiManager.ShowUpperMessage("Not enough resources to build this item");
-        }
+        playerInventory.AddItem(itemName, 1);
+        // Replace direct message with resource gain message
+        uiManager.ShowResourceGainMessage(itemName, 1);
     }
+    else
+    {
+        uiManager.ShowUpperMessage("Not enough resources to build this item");
+    }
+}
 
     private RectTransform EnsureScrollRect(GameObject panel)
     {
@@ -536,25 +538,28 @@ private bool CanBuildItem(string itemName, int cost1, string resource1, int cost
         }
     }
 
-    public void ToggleBuildingMenu()
+public void ToggleBuildingMenu()
+{
+    if (buildingMenuPanel != null)
     {
-        if (buildingMenuPanel != null)
+        bool isOpening = !buildingMenuPanel.activeSelf;
+        buildingMenuPanel.SetActive(isOpening);
+        
+        if (isOpening && !hasShownBuildingMenuMessage)
         {
-            bool isOpening = !buildingMenuPanel.activeSelf;
-            buildingMenuPanel.SetActive(isOpening);
-            
-            if (isOpening)
-            {
-                RefreshAllItemDetails();
-                if (!string.IsNullOrEmpty(lastSelectedItemName))
-                {
-                    ShowItemDetails(lastSelectedItemName, lastSelectedCost1, lastSelectedResource1, 
-                                    lastSelectedCost2, lastSelectedResource2, lastSelectedCost3, 
-                                    lastSelectedResource3, lastSelectedRequiresStation, lastSelectedStationName);
-                }
-            }
+            uiManager.ShowUpperMessage("Building Menu:\nClick on items to view details and build");
+            hasShownBuildingMenuMessage = true;
+        }
+        
+        RefreshAllItemDetails();
+        if (!string.IsNullOrEmpty(lastSelectedItemName))
+        {
+            ShowItemDetails(lastSelectedItemName, lastSelectedCost1, lastSelectedResource1, 
+                            lastSelectedCost2, lastSelectedResource2, lastSelectedCost3, 
+                            lastSelectedResource3, lastSelectedRequiresStation, lastSelectedStationName);
         }
     }
+}
 
     private void OpenBuildingCategory(string category)
     {

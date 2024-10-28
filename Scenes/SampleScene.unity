@@ -3658,7 +3658,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_fontColor: {r: 0.8742138, g: 0.8742138, b: 0.8742138, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -3683,7 +3683,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 1
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
+  m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -4638,6 +4638,9 @@ MonoBehaviour:
   titaniumColor: {r: 0.75, g: 0.75, b: 0.75, a: 1}
   uraniumColor: {r: 0.2, g: 0.8, b: 0.2, a: 1}
   playerColor: {r: 0, g: 1, b: 0, a: 1}
+  rockColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  defaultResourceColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
+  defaultBiomeColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
   forestColor: {r: 0.1, g: 0.8, b: 0.1, a: 1}
   desertColor: {r: 0.9, g: 0.9, b: 0.5, a: 1}
   industrialColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}

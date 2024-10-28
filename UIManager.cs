@@ -31,6 +31,9 @@ public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     public TextMeshProUGUI messageText;
     private float messageDisplayTime = 2f;
     private Coroutine currentMessageCoroutine;
+    private Dictionary<string, int> resourceGainCounts = new Dictionary<string, int>();
+    private Coroutine resourceMessageCoroutine;
+    private float lastResourceTime;
     
 private void ShowMessage(string message)
 {
@@ -75,6 +78,57 @@ private System.Collections.IEnumerator HideMessageAfterDelay(TextMeshProUGUI mes
     if (messageText != null)
     {
         messageText.gameObject.SetActive(false);
+    }
+}
+
+public void ShowResourceGainMessage(string resourceName, int amount)
+{
+    if (lowerMessageText == null) return;
+
+    lastResourceTime = Time.time;
+
+    if (!resourceGainCounts.ContainsKey(resourceName))
+    {
+        resourceGainCounts[resourceName] = 0;
+        if (resourceMessageCoroutine != null)
+            StopCoroutine(resourceMessageCoroutine);
+        resourceMessageCoroutine = StartCoroutine(ClearResourceGainMessageAfterDelay());
+    }
+    
+    resourceGainCounts[resourceName] += amount;
+    UpdateResourceGainMessage();
+}
+
+private void UpdateResourceGainMessage()
+{
+    if (resourceGainCounts.Count == 0) return;
+
+    string message = "";
+    foreach (var kvp in resourceGainCounts)
+    {
+        if (message.Length > 0)
+            message += "\n"; // Replace space with newline
+            
+        message += $"<color=#FFFFFF>+{kvp.Value}</color><space=30><size=45><sprite name={kvp.Key}></size><space=2>{kvp.Key}";
+    }
+    
+    lowerMessageText.text = message;
+}
+
+private System.Collections.IEnumerator ClearResourceGainMessageAfterDelay()
+{
+    while (true)
+    {
+        yield return new WaitForSeconds(2f);
+        
+        // Check if we've received any new resources in the last 2 seconds
+        if (Time.time - lastResourceTime > 2f)
+        {
+            resourceGainCounts.Clear();
+            lowerMessageText.text = "";
+            resourceMessageCoroutine = null;
+            yield break;
+        }
     }
 }
 

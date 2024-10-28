@@ -26,18 +26,25 @@ public class PlayerMovement : MonoBehaviour
     private PlayerInventory inventory;
     private MessageManager messageManager;
     private bool isHoldingRightClick = false;
+    private UIManager uiManager;
 
-    void Start()
+void Start()
+{
+    messageManager = FindObjectOfType<MessageManager>();
+    inventory = GetComponent<PlayerInventory>();
+    uiManager = FindObjectOfType<UIManager>();
+    
+    if (inventory == null)
     {
-        messageManager = FindObjectOfType<MessageManager>();
-        inventory = GetComponent<PlayerInventory>();
-        if (inventory == null)
-        {
-            Debug.LogError("PlayerInventory component not found on the player!");
-        }
-
-        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+        Debug.LogError("PlayerInventory component not found on the player!");
     }
+    if (uiManager == null)
+    {
+        Debug.LogError("UIManager not found in the scene!");
+    }
+
+    Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+}
 
 void Update()
 {
@@ -277,43 +284,43 @@ private void HandleMouseInput()
         }
     }
 
-    void MineResource()
+void MineResource()
+{
+    if (currentResource != null && currentResource.IsInMiningRange(transform.position))
     {
-        if (currentResource != null && currentResource.IsInMiningRange(transform.position))
-        {
-            bool canMine = currentResource.isFood || CanMineWithCurrentTools(currentResource.resourceName);
+        bool canMine = currentResource.isFood || CanMineWithCurrentTools(currentResource.resourceName);
 
-            if (!canMine)
-            {
-                ShowMessage($"You need a better pickaxe to mine {currentResource.resourceName}!");
-                isMining = false;
-                currentResource = null;
-                return;
-            }
-
-            miningTimer += Time.deltaTime;
-            if (miningTimer >= miningRate)
-            {
-                miningTimer = 0f;
-                currentResource.Mine();
-                inventory.AddItem(currentResource.resourceName, 1);
-                Debug.Log($"Mined {currentResource.resourceName}. Remaining: {currentResource.currentQuantity}");
-                
-                if (currentResource.IsDepletedResource())
-                {
-                    Debug.Log($"{currentResource.resourceName} depleted!");
-                    isMining = false;
-                    currentResource = null;
-                }
-            }
-        }
-        else
+        if (!canMine)
         {
+            ShowMessage($"You need a better pickaxe to mine {currentResource.resourceName}!");
             isMining = false;
             currentResource = null;
-            Debug.Log("No resource to mine");
+            return;
+        }
+
+        miningTimer += Time.deltaTime;
+        if (miningTimer >= miningRate)
+        {
+            miningTimer = 0f;
+            currentResource.Mine();
+            inventory.AddItem(currentResource.resourceName, 1);
+            
+            // Show resource gain message
+            uiManager.ShowResourceGainMessage(currentResource.resourceName, 1);
+            
+            if (currentResource.IsDepletedResource())
+            {
+                isMining = false;
+                currentResource = null;
+            }
         }
     }
+    else
+    {
+        isMining = false;
+        currentResource = null;
+    }
+}
 
 bool CanMineWithCurrentTools(string resourceName)
 {
