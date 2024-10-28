@@ -70,6 +70,8 @@ namespace YourGameNamespace
 
         void GenerateResources(Vector2Int centerTile)
         {
+            Debug.Log("Starting resource generation...");
+            
             // Generate specific resources near borders
             GenerateBorderResources(centerTile, herbPrefab, BiomeType.Forest, 0.2f);
             GenerateBorderResources(centerTile, clayPrefab, BiomeType.Desert, 0.2f);
@@ -93,6 +95,7 @@ namespace YourGameNamespace
             {
                 GenerateResourceVein(centerTile);
             }
+            Debug.Log($"Finished resource generation. Total resources: {worldGrid.Count}");
         }
 
         private void GenerateWaterAndMountains(Vector2Int centerTile)
@@ -186,7 +189,7 @@ namespace YourGameNamespace
                     Debug.LogWarning("Failed to find a suitable position for resource vein after " + maxAttempts + " attempts.");
                     return;
                 }
-            } while (IsWaterOrMountainAt(startPos) || worldGrid.ContainsKey(startPos));
+            } while (IsPositionOccupied(startPos) || worldGrid.ContainsKey(startPos));
 
             int veinSize = Random.Range(minVeinSize * 2, maxVeinSize * 2 + 1);            
             GameObject resourcePrefab = ChooseRandomResource(startPos);
@@ -200,7 +203,7 @@ namespace YourGameNamespace
                 possibleNextTiles = possibleNextTiles.FindAll(tile => 
                     !worldGrid.ContainsKey(tile) && 
                     IsInWorldBounds(tile) && 
-                    !IsWaterOrMountainAt(tile) &&
+                    !IsPositionOccupied(tile) &&
                     biomeManager.GetBiomeAt(tile.x, tile.y) == biomeManager.GetBiomeAt(startPos.x, startPos.y));
 
                 if (possibleNextTiles.Count == 0) break;
@@ -227,7 +230,7 @@ namespace YourGameNamespace
                     Random.Range(centerTile.y - worldSizeY / 2, centerTile.y + worldSizeY / 2)
                 );
 
-                if (!IsWaterOrMountainAt(startPos) && !worldGrid.ContainsKey(startPos) && biomeManager.GetBiomeAt(startPos.x, startPos.y) == biomeType)
+                if (!IsPositionOccupied(startPos) && !worldGrid.ContainsKey(startPos) && biomeManager.GetBiomeAt(startPos.x, startPos.y) == biomeType)
                 {
                     GenerateResourceVeinAt(startPos, resourcePrefab);
                     return;
@@ -251,7 +254,7 @@ namespace YourGameNamespace
                 possibleNextTiles = possibleNextTiles.FindAll(tile => 
                     !worldGrid.ContainsKey(tile) && 
                     IsInWorldBounds(tile) && 
-                    !IsWaterOrMountainAt(tile) &&
+                    !IsPositionOccupied(tile) &&
                     biomeManager.GetBiomeAt(tile.x, tile.y) == biomeManager.GetBiomeAt(startPos.x, startPos.y));
 
                 if (possibleNextTiles.Count == 0) break;
@@ -319,15 +322,30 @@ namespace YourGameNamespace
             return new Vector2(worldCenter.x, worldCenter.y + forestRadius);
         }
 
-        void PlaceResource(Vector2Int tile, GameObject prefab)
-        {
-            Vector3 worldPosition = new Vector3(tile.x * cellSize, tile.y * cellSize, -0.1f);
-            GameObject resource = Instantiate(prefab, worldPosition, Quaternion.identity);
-            resource.transform.SetParent(transform);
-            resource.transform.localScale = new Vector3(0.2f*cellSize, 0.2f*cellSize, 1f);
-            resource.tag = "Resource";
-            worldGrid[tile] = resource;
-        }
+void PlaceResource(Vector2Int tile, GameObject prefab)
+{
+    // Only check if the tile is already occupied in our grid
+    if (worldGrid.ContainsKey(tile))
+    {
+        return;
+    }
+
+    // Check if the position is valid (not water or mountain)
+    if (biomeManager.IsWaterAt(tile) || biomeManager.IsMountainAt(tile))
+    {
+        return;
+    }
+
+    Vector3 worldPosition = new Vector3(tile.x * cellSize, tile.y * cellSize, 0f);
+    GameObject resource = Instantiate(prefab, worldPosition, Quaternion.identity);
+    resource.transform.SetParent(transform);
+    resource.transform.localScale = new Vector3(0.2f*cellSize, 0.2f*cellSize, 1f);
+    resource.tag = "Resource";
+    worldGrid[tile] = resource;
+
+    // Debug log for resource placement
+    Debug.Log($"Placed resource {prefab.name} at position {tile}");
+}
 
         public GameObject GetResourceAt(Vector2Int position)
         {
@@ -337,11 +355,13 @@ namespace YourGameNamespace
             }
             return null;
         }
-
-        public bool IsWaterOrMountainAt(Vector2Int position)
-        {
-            return biomeManager.IsWaterAt(position) || biomeManager.IsMountainAt(position);
-        }
+ 
+public bool IsPositionOccupied(Vector2Int position)
+{
+    return biomeManager.IsWaterAt(position) || 
+           biomeManager.IsMountainAt(position) || 
+           worldGrid.ContainsKey(position);
+}
 
         public Vector2 GetWorldCenter()
         {

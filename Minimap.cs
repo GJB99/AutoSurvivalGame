@@ -26,6 +26,9 @@ namespace YourGameNamespace
         public Color titaniumColor = new Color(0.75f, 0.75f, 0.75f);
         public Color uraniumColor = new Color(0.2f, 0.8f, 0.2f);
         public Color playerColor = Color.green;
+        public Color rockColor = new Color(0.5f, 0.5f, 0.5f);
+        public Color defaultResourceColor = new Color(0.7f, 0.7f, 0.7f);
+        public Color defaultBiomeColor = new Color(0.8f, 0.8f, 0.8f);
 
         public Color forestColor = new Color(0.1f, 0.8f, 0.1f);
         public Color desertColor = new Color(0.9f, 0.9f, 0.5f);
@@ -56,54 +59,104 @@ namespace YourGameNamespace
             UpdateMinimap();
         }
 
-        void UpdateMinimap()
+void UpdateMinimap()
+{
+    int playerX = Mathf.RoundToInt(playerTransform.position.x / worldGenerator.cellSize);
+    int playerY = Mathf.RoundToInt(playerTransform.position.y / worldGenerator.cellSize);
+
+    for (int y = 0; y < mapHeight; y++)
+    {
+        for (int x = 0; x < mapWidth; x++)
         {
-            int playerX = Mathf.RoundToInt(playerTransform.position.x / worldGenerator.cellSize);
-            int playerY = Mathf.RoundToInt(playerTransform.position.y / worldGenerator.cellSize);
+            int worldX = playerX + x - mapWidth / 2;
+            int worldY = playerY + y - mapHeight / 2;
+            Vector2Int worldPos = new Vector2Int(worldX, worldY);
 
-            for (int y = 0; y < mapHeight; y++)
+            Color pixelColor = GetBiomeColor(biomeManager.GetBiomeAt(worldX, worldY));
+
+            if (biomeManager.IsWaterAt(worldPos))
             {
-                for (int x = 0; x < mapWidth; x++)
+                pixelColor = waterColor;
+            }
+            else if (biomeManager.IsMountainAt(worldPos))
+            {
+                pixelColor = mountainColor;
+            }
+            else
+            {
+                GameObject resource = worldGenerator.GetResourceAt(worldPos);
+                if (resource != null)
                 {
-                    int worldX = playerX + x - mapWidth / 2;
-                    int worldY = playerY + y - mapHeight / 2;
-
-                    Color pixelColor = GetBiomeColor(biomeManager.GetBiomeAt(worldX, worldY));
-
-                    if (biomeManager.IsWaterAt(new Vector2Int(worldX, worldY)))
+                    string resourceName = resource.name.Replace("(Clone)", "").Trim();
+                    switch (resourceName)
                     {
-                        pixelColor = waterColor;
+                        case "Rock": pixelColor = rockColor; break;
+                        case "Copper": pixelColor = copperColor; break;
+                        case "Iron": pixelColor = ironColor; break;
+                        case "Wood": pixelColor = woodColor; break;
+                        case "Herb": pixelColor = herbColor; break;
+                        case "Tin": pixelColor = tinColor; break;
+                        case "Clay": pixelColor = clayColor; break;
+                        case "Wheat": pixelColor = wheatColor; break;
+                        case "Carrot": pixelColor = carrotColor; break;
+                        case "Oil": pixelColor = oilColor; break;
+                        case "Scrap": pixelColor = scrapColor; break;
+                        case "Titanium": pixelColor = titaniumColor; break;
+                        case "Uranium": pixelColor = uraniumColor; break;
                     }
-                    else if (biomeManager.IsMountainAt(new Vector2Int(worldX, worldY)))
-                    {
-                        pixelColor = mountainColor;
-                    }
-                    else
-                    {
-                        GameObject resource = worldGenerator.GetResourceAt(new Vector2Int(worldX, worldY));
-                        if (resource != null)
-                        {
-                            pixelColor = GetResourceColor(resource);
-                        }
-                    }
-
-                    minimapTexture.SetPixel(x, y, pixelColor);
                 }
             }
 
-            DrawPlayerIcon();
-            minimapTexture.Apply();
+            minimapTexture.SetPixel(x, y, pixelColor);
         }
+    }
 
-        Color GetResourceColor(GameObject resource)
+    DrawPlayerIcon();
+    minimapTexture.Apply();
+}
+
+private Color GetResourceColor(Vector2Int position)
+{
+    if (worldGenerator.biomeManager.IsWaterAt(position))
+        return waterColor;
+    if (worldGenerator.biomeManager.IsMountainAt(position))
+        return mountainColor;
+
+    GameObject resource = worldGenerator.GetResourceAt(position);
+    if (resource != null)
+    {
+        string resourceName = resource.name.Replace("(Clone)", "").Trim();
+        switch (resourceName)
         {
-            string resourceName = resource.name.ToLower();
-            if (resourceName.Contains("copper")) return copperColor;
-            if (resourceName.Contains("iron")) return ironColor;
-            if (resourceName.Contains("rock") || resourceName.Contains("stone")) return stoneColor;
-            // Add more resource types as needed
-            return Color.white; // Default color for unknown resources
+            case "Rock": return rockColor;
+            case "Copper": return copperColor;
+            case "Iron": return ironColor;
+            case "Wood": return woodColor;
+            case "Herb": return herbColor;
+            case "Tin": return tinColor;
+            case "Clay": return clayColor;
+            case "Wheat": return wheatColor;
+            case "Carrot": return carrotColor;
+            case "Oil": return oilColor;
+            case "Scrap": return scrapColor;
+            case "Titanium": return titaniumColor;
+            case "Uranium": return uraniumColor;
+            default: return defaultResourceColor;
         }
+    }
+
+    // Return biome color if no resource
+    BiomeType biomeType = worldGenerator.biomeManager.GetBiomeAt(position.x, position.y);
+    switch (biomeType)
+    {
+        case BiomeType.Forest: return forestColor;
+        case BiomeType.Desert: return desertColor;
+        case BiomeType.IndustrialWasteland: return industrialColor;
+        case BiomeType.AlienArea: return alienColor;
+        case BiomeType.Lava: return lavaColor;
+        default: return defaultBiomeColor;
+    }
+}
 
         void DrawPlayerIcon()
         {
@@ -172,51 +225,55 @@ namespace YourGameNamespace
             );
         }
 
-        void UpdateMinimapTexture()
+void UpdateMinimapTexture()
+{
+    if (minimapTexture == null)
+    {
+        minimapTexture = new Texture2D(mapWidth, mapHeight);
+    }
+
+    for (int x = 0; x < mapWidth; x++)
+    {
+        for (int y = 0; y < mapHeight; y++)
         {
-            if (minimapTexture == null)
+            Vector2Int worldPos = new Vector2Int(x, y);
+            BiomeType biomeType = worldGenerator.biomeManager.GetBiomeAt(x, y);
+            Color biomeColor = GetBiomeColor(biomeType);
+
+            if (biomeManager.IsWaterAt(worldPos))
             {
-                minimapTexture = new Texture2D(mapWidth, mapHeight);
+                minimapTexture.SetPixel(x, y, waterColor);
             }
-
-            for (int x = 0; x < mapWidth; x++)
+            else if (biomeManager.IsMountainAt(worldPos))
             {
-                for (int y = 0; y < mapHeight; y++)
+                minimapTexture.SetPixel(x, y, mountainColor);
+            }
+            else
+            {
+                GameObject resource = worldGenerator.GetResourceAt(worldPos);
+                if (resource != null)
                 {
-                    Vector2Int worldPos = new Vector2Int(x, y);
-                    BiomeType biomeType = worldGenerator.biomeManager.GetBiomeAt(x, y);
-                    Color biomeColor = GetBiomeColor(biomeType);
-
-                    if (worldGenerator.IsWaterOrMountainAt(worldPos))
-                    {
-                        minimapTexture.SetPixel(x, y, worldGenerator.biomeManager.IsWaterAt(worldPos) ? waterColor : mountainColor);
-                    }
+                    string resourceName = resource.name.ToLower();
+                    if (resourceName.Contains("copper"))
+                        minimapTexture.SetPixel(x, y, copperColor);
+                    else if (resourceName.Contains("iron"))
+                        minimapTexture.SetPixel(x, y, ironColor);
+                    else if (resourceName.Contains("stone"))
+                        minimapTexture.SetPixel(x, y, stoneColor);
                     else
-                    {
-                        GameObject resource = worldGenerator.GetResourceAt(worldPos);
-                        if (resource != null)
-                        {
-                            string resourceName = resource.name.ToLower();
-                            if (resourceName.Contains("copper"))
-                                minimapTexture.SetPixel(x, y, copperColor);
-                            else if (resourceName.Contains("iron"))
-                                minimapTexture.SetPixel(x, y, ironColor);
-                            else if (resourceName.Contains("stone"))
-                                minimapTexture.SetPixel(x, y, stoneColor);
-                            else
-                                minimapTexture.SetPixel(x, y, biomeColor);
-                        }
-                        else
-                        {
-                            minimapTexture.SetPixel(x, y, biomeColor);
-                        }
-                    }
+                        minimapTexture.SetPixel(x, y, biomeColor);
+                }
+                else
+                {
+                    minimapTexture.SetPixel(x, y, biomeColor);
                 }
             }
-
-            minimapTexture.Apply();
-            minimapImage.texture = minimapTexture;
         }
+    }
+
+    minimapTexture.Apply();
+    minimapImage.texture = minimapTexture;
+}
 
         Color GetBiomeColor(BiomeType biomeType)
         {

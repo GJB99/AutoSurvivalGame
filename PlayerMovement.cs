@@ -41,44 +41,49 @@ public class PlayerMovement : MonoBehaviour
 
 void Update()
 {
-    HandleMouseInput();
-
-    if (isHoldingRightClick)
+    // Handle WASD movement
+    float horizontalInput = Input.GetAxisRaw("Horizontal");
+    float verticalInput = Input.GetAxisRaw("Vertical");
+    
+    if (horizontalInput != 0 || verticalInput != 0)
     {
-        Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        SetTargetPosition(mouseWorldPosition);
-    }
-
-    // If the player is moving, stop mining
-    if (isMoving)
-    {
-        isMining = false;
+        Vector3 movement = new Vector3(horizontalInput, verticalInput, 0).normalized;
+        transform.position += movement * moveSpeed * Time.deltaTime;
+        isMoving = true;
     }
     else
     {
-        // If player is not moving and trying to mine a resource
-        if (isMining && currentResource != null)
+        isMoving = false;
+    }
+
+    // Check for resources in range when not moving
+    if (!isMoving)
+    {
+        CheckForResourcesInRange();
+    }
+
+    // Handle mining and other interactions
+    if (isMoving)
+    {
+        isMining = false;
+        currentResource = null;
+    }
+    else if (isMining && currentResource != null)
+    {
+        if (currentResource.IsInMiningRange(transform.position))
         {
-            if (currentResource.IsInMiningRange(transform.position))
-            {
-                MineResource();
-            }
-            else
-            {
-                // Player is out of range, stop mining
-                isMining = false;
-                currentResource = null;
-                Debug.Log("Out of range for mining.");
-            }
+            MineResource();
+        }
+        else
+        {
+            isMining = false;
+            currentResource = null;
+            ShowMessage("Out of range for mining.");
         }
     }
 
-    if (isMoving)
-    {
-        MovePlayer();
-    }
-
-    // New cursor logic
+    // Handle mouse input for resource info
+    HandleMouseInput();
     UpdateCursor();
 }
 
@@ -120,56 +125,51 @@ private void UpdateCursor()
     }
 }
 
-    void HandleMouseInput()
+private void CheckForResourcesInRange()
+{
+    if (Input.GetMouseButtonDown(1)) // Left click to start mining
     {
-        Vector2 mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(mouseWorldPosition, Vector2.zero);
-
-        if (Input.GetMouseButtonDown(1)) // Right mouse button pressed
-        {
-            isHoldingRightClick = true;
-            HandleRightClick(mouseWorldPosition, hit);
-        }
-        else if (Input.GetMouseButtonUp(1)) // Right mouse button released
-        {
-            isHoldingRightClick = false;
-        }
-
-        if (isHoldingRightClick)
-        {
-            SetTargetPosition(mouseWorldPosition);
-        }
+        Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
         if (hit.collider != null)
         {
-            if (IsClickableObject(hit.collider.gameObject))
+            Resource resource = hit.collider.GetComponent<Resource>();
+            if (resource != null)
             {
-                Cursor.SetCursor(handCursor, Vector2.zero, CursorMode.Auto);
-
-                if (Input.GetMouseButtonDown(0)) // Left click
+                if (resource.IsInMiningRange(transform.position))
                 {
-                    InteractWithClickable(hit.collider.gameObject);
+                    StartMining(resource);
+                }
+                else
+                {
+                    ShowMessage("Move closer to mine this resource!");
                 }
             }
-            else if (hit.collider.GetComponent<Resource>() != null)
-            {
-                Cursor.SetCursor(miningCursor, Vector2.zero, CursorMode.Auto);
-
-                if (Input.GetMouseButtonDown(0)) // Left click
-                {
-                    ShowResourceInfo(hit.collider.GetComponent<Resource>());
-                }
-            }
-            else
-            {
-                Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
-            }
-        }
-        else
-        {
-            Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
         }
     }
+}
+
+private void HandleMouseInput()
+{
+    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+    RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+
+    if (hit.collider != null)
+    {
+        if (IsClickableObject(hit.collider.gameObject))
+        {
+            if (Input.GetMouseButtonDown(1))
+            {
+                InteractWithClickable(hit.collider.gameObject);
+            }
+        }
+        else if (hit.collider.GetComponent<Resource>() != null && Input.GetMouseButtonDown(0))
+        {
+            ShowResourceInfo(hit.collider.GetComponent<Resource>());
+        }
+    }
+}
 
     bool IsClickableObject(GameObject obj)
     {
