@@ -19,6 +19,7 @@ public class PlayerInventory : MonoBehaviour
     private bool isInventoryVisible = false;
     private bool isBuildingMenuVisible = false;
     public ItemBar itemBar;
+    private UIManager uiManager;
     public GameObject inventoryItemPrefab;
     public Transform inventoryItemsContainer;
     private List<GameObject> inventoryItemObjects = new List<GameObject>();
@@ -28,12 +29,11 @@ public class PlayerInventory : MonoBehaviour
     public delegate void InventoryChangedHandler();
     public event InventoryChangedHandler OnInventoryChanged;
 
-    public bool IsFood(string itemName)
+public bool IsFood(string itemName)
 {
-    // Implement your logic to determine if an item is food
-    // For example, you could have a list of food items or a property on the item itself
-    List<string> foodItems = new List<string> { "Apple", "Bread", "Fish" }; // Add your food items here
-    return foodItems.Contains(itemName);
+    // Add your food item names here
+    string[] foodItems = { "Apple", "Herb", "Carrot", "Bread", "Wheat", "Fish" };
+    return System.Array.Exists(foodItems, food => food.Equals(itemName, System.StringComparison.OrdinalIgnoreCase));
 }
 
     public void UpdateItemBar()
@@ -46,15 +46,57 @@ public class PlayerInventory : MonoBehaviour
         foodBar.UpdateFoodBar();
     }
 
-    void Start()
+void Start()
+{
+    if (inventoryUI != null) inventoryUI.SetActive(false);
+    if (buildingMenuUI != null) buildingMenuUI.SetActive(false);
+    itemBar = FindObjectOfType<ItemBar>();
+    foodBar = FindObjectOfType<FoodBar>();
+    uiManager = FindObjectOfType<UIManager>();
+    UpdateInventoryDisplay();
+}
+
+private void OnBeginDrag(PointerEventData eventData)
+{
+    if (uiManager != null)
     {
-        if (inventoryUI != null) inventoryUI.SetActive(false);
-        if (buildingMenuUI != null) buildingMenuUI.SetActive(false);
-        itemBar = FindObjectOfType<ItemBar>();
-        foodBar = FindObjectOfType<FoodBar>();
-        UpdateInventoryDisplay();
-        UpdateBuildingMenuDisplay();
+        var item = eventData.pointerCurrentRaycast.gameObject;
+        Transform itemIconTransform = item.transform.Find("ItemIcon");
+        if (itemIconTransform != null)
+        {
+            Image itemImage = itemIconTransform.GetComponent<Image>();
+            if (itemImage != null && itemImage.sprite != null)
+            {
+                // Get the item data from the inventory
+                var inventoryItems = mainInventory.ToList();
+                int slotIndex = inventoryItemObjects.IndexOf(item);
+                
+                if (slotIndex >= 0 && slotIndex < inventoryItems.Count)
+                {
+                    // Let UIManager handle the drag operation
+                    eventData.pointerDrag = item;  // Set the dragged object
+                    uiManager.OnBeginDrag(eventData);
+                }
+            }
+        }
     }
+}
+
+private void OnDrag(PointerEventData eventData)
+{
+    if (uiManager != null)
+    {
+        uiManager.OnDrag(eventData);
+    }
+}
+
+private void OnEndDrag(PointerEventData eventData)
+{
+    if (uiManager != null)
+    {
+        uiManager.OnEndDrag(eventData);
+    }
+}
 
 public bool MoveItem(string itemName, int amount, string fromContainer, string toContainer)
 {
@@ -84,65 +126,56 @@ public bool MoveItem(string itemName, int amount, string fromContainer, string t
     // Validate food bar moves
     if (toContainer == "FoodBar")
     {
-        if (!IsFood(itemName) || foodBarItems.Count >= foodBarCapacity)
+        if (!IsFood(itemName))
+        {
+            return false;
+        }
+        if (foodBarItems.Count >= foodBarCapacity && !targetContainer.ContainsKey(itemName))
         {
             return false;
         }
     }
 
     // Validate item bar moves
-    if (toContainer == "ItemBar" && itemBarItems.Count >= itemBarCapacity)
+    if (toContainer == "ItemBar")
     {
-        return false;
+        if (itemBarItems.Count >= itemBarCapacity && !targetContainer.ContainsKey(itemName))
+        {
+            return false;
+        }
+    }
+
+    // Check stack size limits
+    if (targetContainer.ContainsKey(itemName))
+    {
+        if (targetContainer[itemName] >= MAX_STACK_SIZE)
+        {
+            return false;
+        }
+        int spaceInStack = MAX_STACK_SIZE - targetContainer[itemName];
+        amount = Mathf.Min(amount, spaceInStack);
     }
 
     // Remove from source
-    sourceContainer.Remove(itemName);
-
-    // Add to target with stack size limit
-    if (targetContainer.ContainsKey(itemName))
+    if (amount >= totalAmount)
     {
-        int currentAmount = targetContainer[itemName];
-        int spaceInStack = MAX_STACK_SIZE - currentAmount;
-        int amountToAdd = Mathf.Min(amount, spaceInStack);
-
-        targetContainer[itemName] += amountToAdd;
-        amount -= amountToAdd;
-
-        // If there are remaining items, create a new stack
-        if (amount > 0)
-        {
-            // For main inventory, we can create multiple stacks
-            if (toContainer == "MainInventory")
-            {
-                while (amount > 0)
-                {
-                    int stackAmount = Mathf.Min(amount, MAX_STACK_SIZE);
-                    targetContainer.Add(itemName + "_" + System.Guid.NewGuid().ToString(), stackAmount);
-                    amount -= stackAmount;
-                }
-            }
-            else
-            {
-                // For item bar and food bar, if we can't fit all items, move remainder to main inventory
-                AddToMainInventory(itemName, amount);
-            }
-        }
+        sourceContainer.Remove(itemName);
     }
     else
     {
-        // Creating a new stack
-        int stackAmount = Mathf.Min(amount, MAX_STACK_SIZE);
-        targetContainer[itemName] = stackAmount;
-        
-        // If there are remaining items, handle them
-        if (amount > stackAmount)
-        {
-            AddToMainInventory(itemName, amount - stackAmount);
-        }
+        sourceContainer[itemName] -= amount;
     }
 
-    OnInventoryChanged?.Invoke();
+    // Add to target
+    if (targetContainer.ContainsKey(itemName))
+    {
+        targetContainer[itemName] += amount;
+    }
+    else
+    {
+        targetContainer[itemName] = amount;
+    }
+
     return true;
 }
 
@@ -222,64 +255,52 @@ public bool HasIronPickaxe()
 
 public void AddItem(string itemName, int amount)
 {
-    // First try to add to any existing stacks in any container
     bool addedToExisting = false;
 
-    // Check main inventory first for existing stacks
-    foreach (var stack in mainInventory.ToList())
+    // First check for existing stacks in ANY container
+    if (mainInventory.ContainsKey(itemName) && mainInventory[itemName] < MAX_STACK_SIZE)
     {
-        if (stack.Key.StartsWith(itemName) && stack.Value < MAX_STACK_SIZE)
-        {
-            int spaceInStack = MAX_STACK_SIZE - stack.Value;
-            int amountToAdd = Mathf.Min(amount, spaceInStack);
-            mainInventory[stack.Key] += amountToAdd;
-            amount -= amountToAdd;
-            addedToExisting = true;
-            
-            if (amount <= 0) break;
-        }
+        int spaceInStack = MAX_STACK_SIZE - mainInventory[itemName];
+        int amountToAdd = Mathf.Min(amount, spaceInStack);
+        mainInventory[itemName] += amountToAdd;
+        amount -= amountToAdd;
+        addedToExisting = true;
+    }
+    else if (foodBarItems.ContainsKey(itemName) && foodBarItems[itemName] < MAX_STACK_SIZE)
+    {
+        int spaceInStack = MAX_STACK_SIZE - foodBarItems[itemName];
+        int amountToAdd = Mathf.Min(amount, spaceInStack);
+        foodBarItems[itemName] += amountToAdd;
+        amount -= amountToAdd;
+        addedToExisting = true;
+    }
+    else if (itemBarItems.ContainsKey(itemName) && itemBarItems[itemName] < MAX_STACK_SIZE)
+    {
+        int spaceInStack = MAX_STACK_SIZE - itemBarItems[itemName];
+        int amountToAdd = Mathf.Min(amount, spaceInStack);
+        itemBarItems[itemName] += amountToAdd;
+        amount -= amountToAdd;
+        addedToExisting = true;
     }
 
-    // If we didn't add to an existing stack or still have remaining amount
-    if (!addedToExisting || amount > 0)
+    // If we still have items to add and nothing was added to existing stacks
+    if (amount > 0)
     {
-        // For food items, try food bar first
-        if (IsFood(itemName))
+        // For food items, try food bar first if empty slot available
+        if (IsFood(itemName) && foodBarItems.Count < foodBarCapacity)
         {
-            if (foodBarItems.ContainsKey(itemName) && foodBarItems[itemName] < MAX_STACK_SIZE)
-            {
-                int spaceInStack = MAX_STACK_SIZE - foodBarItems[itemName];
-                int amountToAdd = Mathf.Min(amount, spaceInStack);
-                foodBarItems[itemName] += amountToAdd;
-                amount -= amountToAdd;
-            }
-            else if (foodBarItems.Count < foodBarCapacity && amount > 0)
-            {
-                int stackAmount = Mathf.Min(amount, MAX_STACK_SIZE);
-                foodBarItems[itemName] = stackAmount;
-                amount -= stackAmount;
-            }
+            int stackAmount = Mathf.Min(amount, MAX_STACK_SIZE);
+            foodBarItems[itemName] = stackAmount;
+            amount -= stackAmount;
         }
-
-        // Try item bar if no existing stacks were found
-        if (!addedToExisting && amount > 0)
+        // For non-food items, try item bar first if empty slot available
+        else if (!IsFood(itemName) && itemBarItems.Count < itemBarCapacity)
         {
-            if (itemBarItems.ContainsKey(itemName) && itemBarItems[itemName] < MAX_STACK_SIZE)
-            {
-                int spaceInStack = MAX_STACK_SIZE - itemBarItems[itemName];
-                int amountToAdd = Mathf.Min(amount, spaceInStack);
-                itemBarItems[itemName] += amountToAdd;
-                amount -= amountToAdd;
-            }
-            else if (itemBarItems.Count < itemBarCapacity && amount > 0)
-            {
-                int stackAmount = Mathf.Min(amount, MAX_STACK_SIZE);
-                itemBarItems[itemName] = stackAmount;
-                amount -= stackAmount;
-            }
+            int stackAmount = Mathf.Min(amount, MAX_STACK_SIZE);
+            itemBarItems[itemName] = stackAmount;
+            amount -= stackAmount;
         }
-
-        // If there's still remaining amount, add to main inventory
+        // Finally, add remaining to main inventory
         if (amount > 0)
         {
             AddToMainInventory(itemName, amount);
@@ -401,96 +422,118 @@ private void AddToMainInventory(string itemName, int quantity)
     OnInventoryChanged?.Invoke();
 }
 
-    public void UpdateInventoryDisplay()
+public void UpdateInventoryDisplay()
+{
+    Debug.Log("=== UpdateInventoryDisplay Start ===");
+    Debug.Log("Main Inventory Contents:");
+    foreach (var item in mainInventory)
     {
-        Debug.Log("=== UpdateInventoryDisplay Start ===");
-        Debug.Log("Main Inventory Contents:");
-        foreach (var item in mainInventory)
+        Debug.Log($"{item.Key}: {item.Value}");
+    }
+
+    if (inventoryItemsContainer == null)
+    {
+        Debug.LogError("inventoryItemsContainer is null");
+        return;
+    }
+
+    Debug.Log($"inventoryUI active: {inventoryUI.activeSelf}");
+    Debug.Log($"inventoryItemsContainer active: {inventoryItemsContainer.gameObject.activeSelf}");
+
+    // Clear existing inventory items
+    foreach (GameObject item in inventoryItemObjects)
+    {
+        Destroy(item);
+    }
+    inventoryItemObjects.Clear();
+
+    // Set up GridLayoutGroup
+    GridLayoutGroup gridLayout = inventoryItemsContainer.GetComponent<GridLayoutGroup>();
+    if (gridLayout == null)
+    {
+        gridLayout = inventoryItemsContainer.gameObject.AddComponent<GridLayoutGroup>();
+    }
+
+    int columns = 8;
+    int rows = 3;
+    float spacing = 10f;
+    float slotSize = 75f;
+
+    gridLayout.cellSize = new Vector2(slotSize, slotSize);
+    gridLayout.spacing = new Vector2(spacing, spacing);
+    gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+    gridLayout.constraintCount = columns;
+
+    List<KeyValuePair<string, int>> inventoryItems = mainInventory.ToList();
+
+    for (int i = 0; i < rows * columns; i++)
+    {
+        GameObject newItem = Instantiate(inventoryItemPrefab, inventoryItemsContainer);
+        
+        // Add EventTrigger component to the slot
+        EventTrigger trigger = newItem.AddComponent<EventTrigger>();
+        trigger.triggers = new List<EventTrigger.Entry>();
+
+        // Begin Drag
+        EventTrigger.Entry beginDragEntry = new EventTrigger.Entry();
+        beginDragEntry.eventID = EventTriggerType.BeginDrag;
+        beginDragEntry.callback.AddListener((data) => { OnBeginDrag((PointerEventData)data); });
+        trigger.triggers.Add(beginDragEntry);
+
+        // Drag
+        EventTrigger.Entry dragEntry = new EventTrigger.Entry();
+        dragEntry.eventID = EventTriggerType.Drag;
+        dragEntry.callback.AddListener((data) => { OnDrag((PointerEventData)data); });
+        trigger.triggers.Add(dragEntry);
+
+        // End Drag
+        EventTrigger.Entry endDragEntry = new EventTrigger.Entry();
+        endDragEntry.eventID = EventTriggerType.EndDrag;
+        endDragEntry.callback.AddListener((data) => { OnEndDrag((PointerEventData)data); });
+        trigger.triggers.Add(endDragEntry);
+
+        Image itemImage = newItem.transform.Find("ItemIcon").GetComponent<Image>();
+        TextMeshProUGUI quantityText = newItem.GetComponentInChildren<TextMeshProUGUI>();
+
+        if (i < inventoryItems.Count)
         {
-            Debug.Log($"{item.Key}: {item.Value}");
-        }
+            var item = inventoryItems[i];
+            string formattedName = item.Key.Replace(" ", "_");
+            Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
 
-
-        if (inventoryItemsContainer == null)
-        {
-            Debug.LogError("inventoryItemsContainer is null");
-            return;
-        }
-
-        Debug.Log($"inventoryUI active: {inventoryUI.activeSelf}");
-        Debug.Log($"inventoryItemsContainer active: {inventoryItemsContainer.gameObject.activeSelf}");
-
-        // Clear existing inventory items
-        foreach (GameObject item in inventoryItemObjects)
-        {
-            Destroy(item);
-        }
-        inventoryItemObjects.Clear();
-
-        // Set up GridLayoutGroup
-        GridLayoutGroup gridLayout = inventoryItemsContainer.GetComponent<GridLayoutGroup>();
-        if (gridLayout == null)
-        {
-            gridLayout = inventoryItemsContainer.gameObject.AddComponent<GridLayoutGroup>();
-        }
-
-        int columns = 8;
-        int rows = 3;
-        float spacing = 10f;
-        float slotSize = 75f;
-
-        gridLayout.cellSize = new Vector2(slotSize, slotSize);
-        gridLayout.spacing = new Vector2(spacing, spacing);
-        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        gridLayout.constraintCount = columns;
-
-        List<KeyValuePair<string, int>> inventoryItems = mainInventory.ToList();
-
-        for (int i = 0; i < rows * columns; i++)
-        {
-            GameObject newItem = Instantiate(inventoryItemPrefab, inventoryItemsContainer);
-            Image itemImage = newItem.transform.Find("ItemIcon").GetComponent<Image>();
-            TextMeshProUGUI quantityText = newItem.GetComponentInChildren<TextMeshProUGUI>();
-
-            if (i < inventoryItems.Count)
+            if (itemSprite == null)
             {
-                var item = inventoryItems[i];
-                string formattedName = item.Key.Replace(" ", "_");
-                Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
+                itemSprite = Resources.Load<Sprite>("Images/" + item.Key.Replace(" ", ""));
+            }
 
-                if (itemSprite == null)
-                {
-                    itemSprite = Resources.Load<Sprite>("Images/" + item.Key.Replace(" ", ""));
-                }
-
-                if (itemSprite != null)
-                {
-                    itemImage.sprite = itemSprite;
-                    itemImage.color = Color.white;
-                }
-                else
-                {
-                    Debug.LogWarning($"Failed to load sprite: {item.Key}");
-                    itemImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-                }
-
-                quantityText.text = item.Value.ToString();
-                Debug.Log($"Added item to inventory display: {item.Key} x{item.Value}");
+            if (itemSprite != null)
+            {
+                itemImage.sprite = itemSprite;
+                itemImage.color = Color.white;
             }
             else
             {
-                itemImage.sprite = null;
-                itemImage.color = new Color(0.5f, 0.5f, 0.5f, 0.1f);
-                quantityText.text = "";
+                Debug.LogWarning($"Failed to load sprite: {item.Key}");
+                itemImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
             }
 
-            inventoryItemObjects.Add(newItem);
+            quantityText.text = item.Value.ToString();
+            Debug.Log($"Added item to inventory display: {item.Key} x{item.Value}");
+        }
+        else
+        {
+            itemImage.sprite = null;
+            itemImage.color = new Color(0.5f, 0.5f, 0.5f, 0.1f);
+            quantityText.text = "";
         }
 
-        Debug.Log($"Inventory display updated. Total slots: {inventoryItemObjects.Count}");
-        LogInventoryContents();
-        Debug.Log("=== UpdateInventoryDisplay End ===");
+        inventoryItemObjects.Add(newItem);
     }
+
+    Debug.Log($"Inventory display updated. Total slots: {inventoryItemObjects.Count}");
+    LogInventoryContents();
+    Debug.Log("=== UpdateInventoryDisplay End ===");
+}
 
     public void AddItemToMainInventoryForTesting(string itemName, int quantity)
     {
