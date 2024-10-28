@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
 
-public class UIManager : MonoBehaviour
+public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public GameObject inventoryPanel;
     public GameObject craftingPanel;
@@ -155,44 +155,60 @@ private void OnPointerExitItem(PointerEventData eventData)
     Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
 }
 
-    private void SetupContainerDragHandlers()
-    {
-        SetupContainerDragHandlers(inventoryPanel, "MainInventory");
-        SetupContainerDragHandlers(itemBarPanel, "ItemBar");
-        SetupContainerDragHandlers(foodBarPanel, "FoodBar");
-    }
-
-private void SetupContainerDragHandlers(GameObject container, string containerName)
+private void SetupContainerDragHandlers()
 {
-    if (container == null)
-    {
-        Debug.LogError($"Container {containerName} is null");
-        return;
-    }
+    SetupDragHandlersForContainer(inventoryPanel);
+    SetupDragHandlersForContainer(itemBarPanel);
+    SetupDragHandlersForContainer(foodBarPanel);
+}
 
+private void SetupDragHandlersForContainer(GameObject container)
+{
+    if (container == null) return;
+
+    // Find the content holder (might be the container itself or a child named "Content")
     Transform contentHolder = container.transform.Find("Content") ?? container.transform;
 
     foreach (Transform child in contentHolder)
     {
-        GameObject itemSlot = child.gameObject;
-        Image slotImage = GetItemImage(itemSlot);
-
-        if (slotImage != null)
+        if (child.GetComponent<Image>() != null)
         {
-            EventTrigger trigger = itemSlot.GetComponent<EventTrigger>();
-            if (trigger == null)
+            SetupDragHandler(child.gameObject);
+        }
+        else
+        {
+            foreach (Transform grandchild in child)
             {
-                trigger = itemSlot.AddComponent<EventTrigger>();
+                if (grandchild.GetComponent<Image>() != null)
+                {
+                    SetupDragHandler(grandchild.gameObject);
+                }
             }
-
-            AddEventTrigger(trigger, EventTriggerType.BeginDrag, (data) => { OnBeginDrag((PointerEventData)data, containerName); });
-            AddEventTrigger(trigger, EventTriggerType.Drag, (data) => { OnDrag((PointerEventData)data); });
-            AddEventTrigger(trigger, EventTriggerType.EndDrag, (data) => { OnEndDrag((PointerEventData)data); });
-            AddEventTrigger(trigger, EventTriggerType.EndDrag, (data) => { OnDragEnd((PointerEventData)data); });
-
-            Debug.Log($"Added EventTrigger to {itemSlot.name} in {containerName}");
         }
     }
+}
+
+private void SetupDragHandler(GameObject item)
+{
+    EventTrigger trigger = item.GetComponent<EventTrigger>() ?? item.AddComponent<EventTrigger>();
+
+    // Begin Drag
+    EventTrigger.Entry beginDragEntry = new EventTrigger.Entry();
+    beginDragEntry.eventID = EventTriggerType.BeginDrag;
+    beginDragEntry.callback.AddListener((data) => { OnBeginDrag((PointerEventData)data); });
+    trigger.triggers.Add(beginDragEntry);
+
+    // Drag
+    EventTrigger.Entry dragEntry = new EventTrigger.Entry();
+    dragEntry.eventID = EventTriggerType.Drag;
+    dragEntry.callback.AddListener((data) => { OnDrag((PointerEventData)data); });
+    trigger.triggers.Add(dragEntry);
+
+    // End Drag
+    EventTrigger.Entry endDragEntry = new EventTrigger.Entry();
+    endDragEntry.eventID = EventTriggerType.EndDrag;
+    endDragEntry.callback.AddListener((data) => { OnEndDrag((PointerEventData)data); });
+    trigger.triggers.Add(endDragEntry);
 }
 
     private void AddEventTrigger(EventTrigger trigger, EventTriggerType eventType, UnityEngine.Events.UnityAction<BaseEventData> action)
@@ -203,104 +219,82 @@ private void SetupContainerDragHandlers(GameObject container, string containerNa
         trigger.triggers.Add(entry);
     }
 
-private void OnBeginDrag(PointerEventData eventData, string containerName)
-{
-    if (eventData == null || eventData.pointerDrag == null)
+public void OnBeginDrag(PointerEventData eventData)
     {
-        Debug.LogError($"Invalid drag event data for {containerName}");
-        return;
+        if (eventData.pointerDrag == null) return;
+
+        GameObject draggedObject = eventData.pointerDrag;
+        Transform itemIconTransform = draggedObject.transform.Find("ItemIcon");
+        
+        if (itemIconTransform == null) return;
+
+        Image itemImage = itemIconTransform.GetComponent<Image>();
+        if (itemImage == null || itemImage.sprite == null) return;
+
+        string containerName = GetContainerName(draggedObject);
+        if (string.IsNullOrEmpty(containerName)) return;
+
+        draggedItemName = itemImage.sprite.name;
+        dragSourceContainer = containerName;
+
+        // Create drag visual
+        draggedItem = new GameObject("DraggedItem");
+        draggedItem.transform.SetParent(transform, false);
+        
+        RectTransform rt = draggedItem.AddComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(50, 50); // Adjust size as needed
+
+        Image draggedItemImage = draggedItem.AddComponent<Image>();
+        draggedItemImage.sprite = itemImage.sprite;
+        draggedItemImage.raycastTarget = false;
+
+        // Fade the original item
+        itemImage.color = new Color(1, 1, 1, 0.5f);
+
+        isDragging = true;
     }
 
-    GameObject draggedObject = eventData.pointerDrag;
-    Transform itemIconTransform = draggedObject.transform.Find("ItemIcon");
-    
-    if (itemIconTransform == null)
+    public void OnDrag(PointerEventData eventData)
     {
-        Debug.LogWarning($"ItemIcon not found in {draggedObject.name}");
-        return;
+        if (draggedItem != null)
+        {
+            draggedItem.transform.position = eventData.position;
+        }
     }
 
-    Image itemImage = itemIconTransform.GetComponent<Image>();
-
-    if (itemImage == null || itemImage.sprite == null)
-    {
-        Debug.LogWarning($"Invalid item in {containerName}. Dragged object: {draggedObject.name}");
-        return;
-    }
-
-    string itemName = itemImage.sprite.name;
-    if (playerInventory.GetItemCount(itemName, containerName) <= 0)
-    {
-        Debug.LogWarning($"Item {itemName} not found in {containerName}");
-        return;
-    }
-
-    dragSourceContainer = containerName;
-    draggedItemName = itemName;
-
-    draggedItem = new GameObject("DraggedItem");
-    draggedItem.transform.SetParent(transform, false);
-    draggedItem.transform.position = eventData.position;
-
-    Image draggedItemImage = draggedItem.AddComponent<Image>();
-    draggedItemImage.sprite = itemImage.sprite;
-    draggedItemImage.raycastTarget = false;
-
-    itemImage.color = new Color(1, 1, 1, 0.5f);
-
-    isDragging = true;
-    Debug.Log($"Started dragging {draggedItemName} from {dragSourceContainer}");
-}
-
-private void OnDrag(PointerEventData eventData)
-{
-    if (isDragging && draggedItem != null)
-    {
-        draggedItem.transform.position = eventData.position;
-    }
-}
-
-private void OnEndDrag(PointerEventData eventData)
+public void OnEndDrag(PointerEventData eventData)
 {
     if (isDragging && draggedItem != null && !string.IsNullOrEmpty(draggedItemName))
     {
         GameObject hitObject = eventData.pointerCurrentRaycast.gameObject;
         string targetContainer = GetContainerName(hitObject);
-        Debug.Log($"Drag ended - Item: {draggedItemName}, Source: {dragSourceContainer}, Target: {targetContainer}");
 
-        if (string.IsNullOrEmpty(targetContainer))
+        // Reset the original item's appearance
+        if (eventData.pointerDrag != null)
         {
-            // Item was dropped outside any container (on the ground)
-            if (IsBuildingItem(draggedItemName))
+            Image originalItemImage = GetItemImage(eventData.pointerDrag);
+            if (originalItemImage != null)
             {
-                buildingSystem.InitiateBuildingPlacement(draggedItemName);
-                playerInventory.RemoveItems(draggedItemName, 1);
-            }
-            else
-            {
-                ShowMessage("Can't place this item in the world");
+                originalItemImage.color = Color.white;
             }
         }
-        else if (targetContainer != dragSourceContainer)
+
+        if (!string.IsNullOrEmpty(targetContainer) && targetContainer != dragSourceContainer)
         {
-            // Handle dropping items within containers (existing code)
-            // ...
-        }
-        else
-        {
-            Debug.Log($"Item dropped in the same container: {targetContainer}");
+            // Move the entire stack (passing 1 will move all)
+            bool moved = playerInventory.MoveItem(draggedItemName, 1, dragSourceContainer, targetContainer);
+            
+            if (moved)
+            {
+                // Update all displays
+                playerInventory.UpdateInventoryDisplay();
+                playerInventory.UpdateItemBar();
+                playerInventory.UpdateFoodBar();
+            }
         }
 
-        // Reset the original item's appearance and update inventory displays
-        ResetDraggedItemAppearance(eventData);
-        UpdateAllInventoryDisplays();
+        CleanUpDragOperation();
     }
-    else
-    {
-        Debug.Log("Drag ended but no valid drag operation was in progress");
-    }
-
-    CleanUpDragOperation();
 }
 
 private void ResetDraggedItemAppearance(PointerEventData eventData)
@@ -381,9 +375,9 @@ private void SwapSlotContents(Transform sourceSlot, Transform targetSlot)
     }
 }
 
-private Image GetItemImage(GameObject item)
+private Image GetItemImage(GameObject obj)
 {
-    Transform itemIconTransform = item.transform.Find("ItemIcon");
+    Transform itemIconTransform = obj.transform.Find("ItemIcon");
     if (itemIconTransform != null)
     {
         return itemIconTransform.GetComponent<Image>();
@@ -391,11 +385,11 @@ private Image GetItemImage(GameObject item)
     return null;
 }
 
-private string GetContainerName(GameObject hitObject)
+private string GetContainerName(GameObject obj)
 {
-    if (hitObject == null) return string.Empty;
+    if (obj == null) return string.Empty;
 
-    Transform current = hitObject.transform;
+    Transform current = obj.transform;
     while (current != null)
     {
         if (current.gameObject == inventoryPanel)
