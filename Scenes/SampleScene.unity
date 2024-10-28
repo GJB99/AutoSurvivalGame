@@ -3174,11 +3174,11 @@ MonoBehaviour:
   inventoryUI: {fileID: 1711091300}
   buildingMenuUI: {fileID: 1284911069}
   inventoryText: {fileID: 1799111752}
-  buildingMenuText: {fileID: 0}
-  itemBar: {fileID: 0}
+  buildingMenuText: {fileID: 1040603363}
+  itemBar: {fileID: 1401847963}
   inventoryItemPrefab: {fileID: 1094164463703806785, guid: aa855eed9e83677418ddefe86fa4dc14, type: 3}
   inventoryItemsContainer: {fileID: 295528803}
-  foodBar: {fileID: 0}
+  foodBar: {fileID: 69671057}
   itemBarCapacity: 5
   foodBarCapacity: 3
 --- !u!114 &511426194
@@ -3648,7 +3648,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: M
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3682,8 +3682,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -6719,7 +6719,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: M
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -6753,8 +6753,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0

@@ -50,8 +50,12 @@ public class BuildingSystem : MonoBehaviour
     private bool lastSelectedRequiresStation;
     private string lastSelectedStationName;
 
+    private UIManager uiManager;
+    
+
     private void Start()
     {
+        uiManager = FindObjectOfType<UIManager>();
         playerInventory = GetComponent<PlayerInventory>();
         playerInventory.OnInventoryChanged += UpdateUIOnInventoryChange;
         SetupButtonListeners();
@@ -472,11 +476,11 @@ private bool CanBuildItem(string itemName, int cost1, string resource1, int cost
                 playerInventory.RemoveItems(resource3, cost3);
 
             playerInventory.AddItem(itemName, 1);
-            ShowMessage($"Built 1 {itemName}");
+            uiManager.ShowLowerMessage($"Built 1 {itemName}");
         }
         else
         {
-            ShowMessage("Not enough resources to build this item");
+            uiManager.ShowUpperMessage("Not enough resources to build this item");
         }
     }
 

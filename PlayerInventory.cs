@@ -56,48 +56,6 @@ void Start()
     UpdateInventoryDisplay();
 }
 
-private void OnBeginDrag(PointerEventData eventData)
-{
-    if (uiManager != null)
-    {
-        var item = eventData.pointerCurrentRaycast.gameObject;
-        Transform itemIconTransform = item.transform.Find("ItemIcon");
-        if (itemIconTransform != null)
-        {
-            Image itemImage = itemIconTransform.GetComponent<Image>();
-            if (itemImage != null && itemImage.sprite != null)
-            {
-                // Get the item data from the inventory
-                var inventoryItems = mainInventory.ToList();
-                int slotIndex = inventoryItemObjects.IndexOf(item);
-                
-                if (slotIndex >= 0 && slotIndex < inventoryItems.Count)
-                {
-                    // Let UIManager handle the drag operation
-                    eventData.pointerDrag = item;  // Set the dragged object
-                    uiManager.OnBeginDrag(eventData);
-                }
-            }
-        }
-    }
-}
-
-private void OnDrag(PointerEventData eventData)
-{
-    if (uiManager != null)
-    {
-        uiManager.OnDrag(eventData);
-    }
-}
-
-private void OnEndDrag(PointerEventData eventData)
-{
-    if (uiManager != null)
-    {
-        uiManager.OnEndDrag(eventData);
-    }
-}
-
 public bool MoveItem(string itemName, int amount, string fromContainer, string toContainer)
 {
     if (fromContainer == toContainer) return false;
@@ -255,8 +213,6 @@ public bool HasIronPickaxe()
 
 public void AddItem(string itemName, int amount)
 {
-    bool addedToExisting = false;
-
     // First check for existing stacks in ANY container
     if (mainInventory.ContainsKey(itemName) && mainInventory[itemName] < MAX_STACK_SIZE)
     {
@@ -264,7 +220,6 @@ public void AddItem(string itemName, int amount)
         int amountToAdd = Mathf.Min(amount, spaceInStack);
         mainInventory[itemName] += amountToAdd;
         amount -= amountToAdd;
-        addedToExisting = true;
     }
     else if (foodBarItems.ContainsKey(itemName) && foodBarItems[itemName] < MAX_STACK_SIZE)
     {
@@ -272,7 +227,6 @@ public void AddItem(string itemName, int amount)
         int amountToAdd = Mathf.Min(amount, spaceInStack);
         foodBarItems[itemName] += amountToAdd;
         amount -= amountToAdd;
-        addedToExisting = true;
     }
     else if (itemBarItems.ContainsKey(itemName) && itemBarItems[itemName] < MAX_STACK_SIZE)
     {
@@ -280,10 +234,9 @@ public void AddItem(string itemName, int amount)
         int amountToAdd = Mathf.Min(amount, spaceInStack);
         itemBarItems[itemName] += amountToAdd;
         amount -= amountToAdd;
-        addedToExisting = true;
     }
 
-    // If we still have items to add and nothing was added to existing stacks
+    // If we still have items to add
     if (amount > 0)
     {
         // For food items, try food bar first if empty slot available
@@ -293,14 +246,14 @@ public void AddItem(string itemName, int amount)
             foodBarItems[itemName] = stackAmount;
             amount -= stackAmount;
         }
-        // For non-food items, try item bar first if empty slot available
         else if (!IsFood(itemName) && itemBarItems.Count < itemBarCapacity)
         {
             int stackAmount = Mathf.Min(amount, MAX_STACK_SIZE);
             itemBarItems[itemName] = stackAmount;
             amount -= stackAmount;
         }
-        // Finally, add remaining to main inventory
+        
+        // Any remaining amount goes to main inventory
         if (amount > 0)
         {
             AddToMainInventory(itemName, amount);
@@ -311,6 +264,24 @@ public void AddItem(string itemName, int amount)
     UpdateInventoryDisplay();
     UpdateItemBar();
     UpdateFoodBar();
+}
+
+public Sprite LoadItemSprite(string itemKey)
+{
+    // Strip any stack suffix (e.g., "Wood_1" becomes "Wood")
+    string baseItemName = itemKey.Split('_')[0];
+    
+    // Try loading the sprite with different formats
+    Sprite itemSprite = Resources.Load<Sprite>($"Images/{baseItemName}");
+    if (itemSprite == null)
+    {
+        itemSprite = Resources.Load<Sprite>($"Images/{baseItemName.Replace(" ", "")}");
+        if (itemSprite == null)
+        {
+            itemSprite = Resources.Load<Sprite>($"Images/{baseItemName.Replace(" ", "_")}");
+        }
+    }
+    return itemSprite;
 }
 
 private bool TryAddToExistingStack(string itemName, int amount)
@@ -387,30 +358,38 @@ private void AddToMainInventory(string itemName, int quantity)
 {
     while (quantity > 0)
     {
-        // Find an existing stack with room
-        KeyValuePair<string, int>? availableStack = null;
-        foreach (var stack in mainInventory)
+        // First try to fill existing stacks
+        bool addedToExisting = false;
+        foreach (var pair in mainInventory.ToList())
         {
-            if (stack.Key.StartsWith(itemName) && stack.Value < MAX_STACK_SIZE)
+            string baseItemName = pair.Key.Split('_')[0];
+            if (baseItemName == itemName && pair.Value < MAX_STACK_SIZE)
             {
-                availableStack = stack;
-                break;
+                int spaceInStack = MAX_STACK_SIZE - pair.Value;
+                int amountToAdd = Mathf.Min(quantity, spaceInStack);
+                mainInventory[pair.Key] += amountToAdd;
+                quantity -= amountToAdd;
+                addedToExisting = true;
+                
+                if (quantity <= 0) break;
             }
         }
 
-        if (availableStack.HasValue)
+        // If we couldn't add to existing stacks or still have remaining quantity
+        if (!addedToExisting || quantity > 0)
         {
-            // Add to existing stack
-            int spaceInStack = MAX_STACK_SIZE - availableStack.Value.Value;
-            int amountToAdd = Mathf.Min(quantity, spaceInStack);
-            mainInventory[availableStack.Value.Key] += amountToAdd;
-            quantity -= amountToAdd;
-        }
-        else
-        {
-            // Create new stack
+            // Create new stack with unique key
             int stackAmount = Mathf.Min(quantity, MAX_STACK_SIZE);
-            string stackKey = quantity <= MAX_STACK_SIZE ? itemName : itemName + "_" + System.Guid.NewGuid().ToString();
+            string stackKey = itemName;
+            int suffix = 1;
+            
+            // Find an available key
+            while (mainInventory.ContainsKey(stackKey))
+            {
+                stackKey = $"{itemName}_{suffix}";
+                suffix++;
+            }
+            
             mainInventory.Add(stackKey, stackAmount);
             quantity -= stackAmount;
         }
@@ -477,19 +456,19 @@ public void UpdateInventoryDisplay()
         // Begin Drag
         EventTrigger.Entry beginDragEntry = new EventTrigger.Entry();
         beginDragEntry.eventID = EventTriggerType.BeginDrag;
-        beginDragEntry.callback.AddListener((data) => { OnBeginDrag((PointerEventData)data); });
+        beginDragEntry.callback.AddListener((data) => { uiManager.OnBeginDrag((PointerEventData)data); });
         trigger.triggers.Add(beginDragEntry);
 
         // Drag
         EventTrigger.Entry dragEntry = new EventTrigger.Entry();
         dragEntry.eventID = EventTriggerType.Drag;
-        dragEntry.callback.AddListener((data) => { OnDrag((PointerEventData)data); });
+        dragEntry.callback.AddListener((data) => { uiManager.OnDrag((PointerEventData)data); });
         trigger.triggers.Add(dragEntry);
 
         // End Drag
         EventTrigger.Entry endDragEntry = new EventTrigger.Entry();
         endDragEntry.eventID = EventTriggerType.EndDrag;
-        endDragEntry.callback.AddListener((data) => { OnEndDrag((PointerEventData)data); });
+        dragEntry.callback.AddListener((data) => { uiManager.OnDragEnd((PointerEventData)data); });
         trigger.triggers.Add(endDragEntry);
 
         Image itemImage = newItem.transform.Find("ItemIcon").GetComponent<Image>();
@@ -498,13 +477,7 @@ public void UpdateInventoryDisplay()
         if (i < inventoryItems.Count)
         {
             var item = inventoryItems[i];
-            string formattedName = item.Key.Replace(" ", "_");
-            Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
-
-            if (itemSprite == null)
-            {
-                itemSprite = Resources.Load<Sprite>("Images/" + item.Key.Replace(" ", ""));
-            }
+            Sprite itemSprite = LoadItemSprite(item.Key);
 
             if (itemSprite != null)
             {

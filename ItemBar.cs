@@ -40,48 +40,43 @@ public class ItemBar : MonoBehaviour
         }
     }
 
-    public void UpdateItemBar()
+public void UpdateItemBar()
+{
+    List<KeyValuePair<string, int>> itemBarItems = playerInventory.GetItemBarItems();
+
+    for (int i = 0; i < itemSlots.Count; i++)
     {
-        List<KeyValuePair<string, int>> itemBarItems = playerInventory.GetItemBarItems();
+        Transform itemIconTransform = itemSlots[i].transform.Find("ItemIcon");
+        Image itemIconImage = itemIconTransform != null ? itemIconTransform.GetComponent<Image>() : null;
+        TextMeshProUGUI quantityText = itemSlots[i].GetComponentInChildren<TextMeshProUGUI>();
 
-        for (int i = 0; i < itemSlots.Count; i++)
+        if (i < itemBarItems.Count)
         {
-            Transform itemIconTransform = itemSlots[i].transform.Find("ItemIcon");
-            Image itemIconImage = itemIconTransform != null ? itemIconTransform.GetComponent<Image>() : null;
-            TextMeshProUGUI quantityText = itemSlots[i].GetComponentInChildren<TextMeshProUGUI>();
+            string itemName = itemBarItems[i].Key;
+            string baseItemName = itemName.Split('_')[0];
+            Sprite itemSprite = playerInventory.LoadItemSprite(baseItemName);
 
-            if (i < itemBarItems.Count)
+            if (itemSprite != null)
             {
-                string itemName = itemBarItems[i].Key;
-                string formattedName = itemName.Replace(" ", "_");
-                Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
-
-                if (itemSprite == null)
-                {
-                    itemSprite = Resources.Load<Sprite>("Images/" + itemName.Replace(" ", ""));
-                }
-
-                if (itemSprite != null)
-                {
-                    itemIconImage.sprite = itemSprite;
-                    itemIconImage.color = Color.white;
-                    quantityText.text = itemBarItems[i].Value.ToString();
-                }
-                else
-                {
-                    Debug.LogWarning($"Sprite not found for item: {itemName}");
-                    itemIconImage.sprite = null;
-                    itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-                    quantityText.text = "";
-                }
+                itemIconImage.sprite = itemSprite;
+                itemIconImage.color = Color.white;
+                quantityText.text = itemBarItems[i].Value.ToString();
             }
             else
             {
+                Debug.LogWarning($"Sprite not found for item: {itemName}. Tried paths: Images/{itemName}, Images/{itemName.Replace(" ", "")}, Images/{itemName.Replace(" ", "_")}");
                 itemIconImage.sprite = null;
                 itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
                 quantityText.text = "";
             }
         }
+        else
+        {
+            itemIconImage.sprite = null;
+            itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+            quantityText.text = "";
+        }
     }
+}
 
 }

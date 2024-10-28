@@ -24,7 +24,38 @@ public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     private GameObject draggedItem;
     private string draggedItemName;
     private string dragSourceContainer;
+
+    public TextMeshProUGUI upperMessageText;  // For requirements/errors
+    public TextMeshProUGUI lowerMessageText;  // For item notifications
     
+    public void ShowUpperMessage(string message)
+    {
+        if (upperMessageText != null)
+        {
+            upperMessageText.text = message;
+            upperMessageText.gameObject.SetActive(true);
+            StartCoroutine(HideMessageAfterDelay(upperMessageText, 3f));
+        }
+    }
+
+    public void ShowLowerMessage(string message)
+    {
+        if (lowerMessageText != null)
+        {
+            lowerMessageText.text = message;
+            lowerMessageText.gameObject.SetActive(true);
+            StartCoroutine(HideMessageAfterDelay(lowerMessageText, 3f));
+        }
+    }
+
+    private System.Collections.IEnumerator HideMessageAfterDelay(TextMeshProUGUI messageText, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (messageText != null)
+        {
+            messageText.gameObject.SetActive(false);
+        }
+    }
 
     void Start()
     {
@@ -44,7 +75,7 @@ public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         SetupInventoryItemHover();
     }
 
-private void OnDragEnd(PointerEventData eventData)
+public void OnDragEnd(PointerEventData eventData)
 {
     if (draggedItem != null && !string.IsNullOrEmpty(draggedItemName))
     {
@@ -53,34 +84,24 @@ private void OnDragEnd(PointerEventData eventData)
 
         if (string.IsNullOrEmpty(targetContainer))
         {
-            // Item was dropped outside any container (on the ground)
+            // Handle dropping outside containers
             if (IsBuildingItem(draggedItemName))
             {
                 buildingSystem.InitiateBuildingPlacement(draggedItemName);
                 playerInventory.RemoveItems(draggedItemName, 1);
             }
-            else
-            {
-                ShowMessage("Can't place this item in the world");
-            }
         }
-        else if (targetContainer != dragSourceContainer)
+        else
         {
-            // Handle dropping items within containers (existing code)
-            // ...
+            // Let PlayerInventory handle the stacking logic
+            string baseItemName = draggedItemName.Split('_')[0];
+            int amount = playerInventory.GetItemCount(draggedItemName, dragSourceContainer);
+            playerInventory.RemoveItems(draggedItemName, amount);
+            playerInventory.AddItem(baseItemName, amount);
         }
 
-        // Clean up
-        Destroy(draggedItem);
-        draggedItem = null;
-        draggedItemName = null;
-        dragSourceContainer = null;
-        isDragging = false;
-
-        // Update all inventory displays
-        playerInventory.UpdateInventoryDisplay();
-        playerInventory.UpdateItemBar();
-        playerInventory.UpdateFoodBar();
+        CleanUpDragOperation();
+        UpdateAllInventoryDisplays();
     }
 }
 
@@ -270,27 +291,27 @@ public void OnEndDrag(PointerEventData eventData)
         string targetContainer = GetContainerName(hitObject);
 
         // Reset the original item's appearance
-        if (eventData.pointerDrag != null)
+        ResetDraggedItemAppearance(eventData);
+
+        if (!string.IsNullOrEmpty(targetContainer))
         {
-            Image originalItemImage = GetItemImage(eventData.pointerDrag);
-            if (originalItemImage != null)
+            if (targetContainer != dragSourceContainer)
             {
-                originalItemImage.color = Color.white;
+                // Move the entire stack
+                string baseItemName = draggedItemName.Split('_')[0];
+                bool moved = playerInventory.MoveItem(baseItemName, 1, dragSourceContainer, targetContainer);
+                
+                if (moved)
+                {
+                    UpdateAllInventoryDisplays();
+                }
             }
         }
-
-        if (!string.IsNullOrEmpty(targetContainer) && targetContainer != dragSourceContainer)
+        else if (IsBuildingItem(draggedItemName))
         {
-            // Move the entire stack (passing 1 will move all)
-            bool moved = playerInventory.MoveItem(draggedItemName, 1, dragSourceContainer, targetContainer);
-            
-            if (moved)
-            {
-                // Update all displays
-                playerInventory.UpdateInventoryDisplay();
-                playerInventory.UpdateItemBar();
-                playerInventory.UpdateFoodBar();
-            }
+            buildingSystem.InitiateBuildingPlacement(draggedItemName);
+            playerInventory.RemoveItems(draggedItemName, 1);
+            UpdateAllInventoryDisplays();
         }
 
         CleanUpDragOperation();
@@ -332,18 +353,7 @@ private void ShowMessage(string message)
 {
     if (messageText != null)
     {
-        messageText.text = message;
-        messageText.gameObject.SetActive(true);
-        StartCoroutine(HideMessageAfterDelay(3f));
-    }
-}
-
-private System.Collections.IEnumerator HideMessageAfterDelay(float delay)
-{
-    yield return new WaitForSeconds(delay);
-    if (messageText != null)
-    {
-        messageText.gameObject.SetActive(false);
+        ShowLowerMessage(message);  // Use the new lower message for general notifications
     }
 }
 

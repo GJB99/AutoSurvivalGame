@@ -77,13 +77,8 @@ public class FoodBar : MonoBehaviour
             if (i < foodItems.Count)
             {
                 string itemName = foodItems[i].Key;
-                string formattedName = itemName.Replace(" ", "_");
-                Sprite itemSprite = Resources.Load<Sprite>("Images/" + formattedName);
-
-                if (itemSprite == null)
-                {
-                    itemSprite = Resources.Load<Sprite>("Images/" + itemName.Replace(" ", ""));
-                }
+                string baseItemName = itemName.Split('_')[0];
+                Sprite itemSprite = playerInventory.LoadItemSprite(baseItemName);
 
                 if (itemSprite != null)
                 {
