@@ -145,11 +145,11 @@ public int GetItemCount(string itemName, string containerName)
     }
 
     Dictionary<string, int> container = GetContainer(containerName);
-    if (container != null && container.TryGetValue(itemName, out int count))
-    {
-        return count;
-    }
-    return 0;
+    if (container == null) return 0;
+
+    // Sum up all stacks that match the base item name
+    return container.Where(x => x.Key.Split('_')[0] == itemName)
+                   .Sum(x => x.Value);
 } 
 
     private Dictionary<string, int> GetContainer(string containerName)
@@ -213,48 +213,44 @@ public bool HasIronPickaxe()
 
 public void AddItem(string itemName, int amount)
 {
-    // First check for existing stacks in ANY container
-    if (mainInventory.ContainsKey(itemName) && mainInventory[itemName] < MAX_STACK_SIZE)
+    // First try to add to existing stacks in their current containers
+    bool addedToExisting = false;
+
+    // Check if item exists in any container
+    bool existsInMainInventory = mainInventory.Any(x => x.Key.Split('_')[0] == itemName);
+    bool existsInItemBar = itemBarItems.Any(x => x.Key.Split('_')[0] == itemName);
+    bool existsInFoodBar = foodBarItems.Any(x => x.Key.Split('_')[0] == itemName);
+
+    // Try to add to existing stacks first
+    if (existsInMainInventory)
     {
-        int spaceInStack = MAX_STACK_SIZE - mainInventory[itemName];
-        int amountToAdd = Mathf.Min(amount, spaceInStack);
-        mainInventory[itemName] += amountToAdd;
-        amount -= amountToAdd;
+        addedToExisting = TryAddToExistingStacksInContainer(mainInventory, itemName, ref amount);
     }
-    else if (foodBarItems.ContainsKey(itemName) && foodBarItems[itemName] < MAX_STACK_SIZE)
+    else if (existsInItemBar)
     {
-        int spaceInStack = MAX_STACK_SIZE - foodBarItems[itemName];
-        int amountToAdd = Mathf.Min(amount, spaceInStack);
-        foodBarItems[itemName] += amountToAdd;
-        amount -= amountToAdd;
+        addedToExisting = TryAddToExistingStacksInContainer(itemBarItems, itemName, ref amount);
     }
-    else if (itemBarItems.ContainsKey(itemName) && itemBarItems[itemName] < MAX_STACK_SIZE)
+    else if (existsInFoodBar)
     {
-        int spaceInStack = MAX_STACK_SIZE - itemBarItems[itemName];
-        int amountToAdd = Mathf.Min(amount, spaceInStack);
-        itemBarItems[itemName] += amountToAdd;
-        amount -= amountToAdd;
+        addedToExisting = TryAddToExistingStacksInContainer(foodBarItems, itemName, ref amount);
     }
 
     // If we still have items to add
     if (amount > 0)
     {
-        // For food items, try food bar first if empty slot available
-        if (IsFood(itemName) && foodBarItems.Count < foodBarCapacity)
+        if (existsInMainInventory)
         {
-            int stackAmount = Mathf.Min(amount, MAX_STACK_SIZE);
-            foodBarItems[itemName] = stackAmount;
-            amount -= stackAmount;
+            AddToMainInventory(itemName, amount);
+        }
+        else if (IsFood(itemName) && foodBarItems.Count < foodBarCapacity)
+        {
+            AddToFoodBarWithStacks(itemName, amount);
         }
         else if (!IsFood(itemName) && itemBarItems.Count < itemBarCapacity)
         {
-            int stackAmount = Mathf.Min(amount, MAX_STACK_SIZE);
-            itemBarItems[itemName] = stackAmount;
-            amount -= stackAmount;
+            AddToItemBarWithStacks(itemName, amount);
         }
-        
-        // Any remaining amount goes to main inventory
-        if (amount > 0)
+        else
         {
             AddToMainInventory(itemName, amount);
         }
@@ -284,50 +280,68 @@ public Sprite LoadItemSprite(string itemKey)
     return itemSprite;
 }
 
-private bool TryAddToExistingStack(string itemName, int amount)
+private bool TryAddToExistingStacksInContainer(Dictionary<string, int> container, string itemName, ref int amount)
 {
-    // For food items, prioritize food bar
-    if (IsFood(itemName))
+    bool added = false;
+    foreach (var pair in container.ToList())
     {
-        if (foodBarItems.ContainsKey(itemName) && foodBarItems[itemName] < MAX_STACK_SIZE)
+        if (pair.Key.Split('_')[0] == itemName && pair.Value < MAX_STACK_SIZE)
         {
-            int spaceInStack = MAX_STACK_SIZE - foodBarItems[itemName];
+            int spaceInStack = MAX_STACK_SIZE - pair.Value;
             int amountToAdd = Mathf.Min(amount, spaceInStack);
-            foodBarItems[itemName] += amountToAdd;
-            
-            if (amountToAdd < amount)
-            {
-                AddItem(itemName, amount - amountToAdd); // Recursively handle remaining amount
-            }
-            return true;
+            container[pair.Key] += amountToAdd;
+            amount -= amountToAdd;
+            added = true;
+            if (amount <= 0) break;
         }
-        else if (foodBarItems.Count < foodBarCapacity)
+    }
+    return added;
+}
+
+private void AddToItemBarWithStacks(string itemName, int amount)
+{
+    while (amount > 0 && itemBarItems.Count < itemBarCapacity)
+    {
+        string stackKey = itemName;
+        int suffix = 1;
+        while (itemBarItems.ContainsKey(stackKey))
         {
-            AddItem(itemName, amount); // This will handle adding to food bar
-            return true;
+            stackKey = $"{itemName}_{suffix}";
+            suffix++;
         }
+
+        int stackAmount = Mathf.Min(amount, MAX_STACK_SIZE);
+        itemBarItems.Add(stackKey, stackAmount);
+        amount -= stackAmount;
     }
 
-    // Then try item bar
-    if (itemBarItems.ContainsKey(itemName) && itemBarItems[itemName] < MAX_STACK_SIZE)
+    if (amount > 0)
     {
-        int spaceInStack = MAX_STACK_SIZE - itemBarItems[itemName];
-        int amountToAdd = Mathf.Min(amount, spaceInStack);
-        itemBarItems[itemName] += amountToAdd;
-        
-        if (amountToAdd < amount)
-        {
-            AddItem(itemName, amount - amountToAdd); // Recursively handle remaining amount
-        }
-        return true;
+        AddToMainInventory(itemName, amount);
     }
-    else if (itemBarItems.Count < itemBarCapacity)
+}
+
+private void AddToFoodBarWithStacks(string itemName, int amount)
+{
+    while (amount > 0 && foodBarItems.Count < foodBarCapacity)
     {
-        AddItem(itemName, amount); // This will handle adding to item bar
-        return true;
+        string stackKey = itemName;
+        int suffix = 1;
+        while (foodBarItems.ContainsKey(stackKey))
+        {
+            stackKey = $"{itemName}_{suffix}";
+            suffix++;
+        }
+
+        int stackAmount = Mathf.Min(amount, MAX_STACK_SIZE);
+        foodBarItems.Add(stackKey, stackAmount);
+        amount -= stackAmount;
     }
 
-    return false;
+    if (amount > 0)
+    {
+        AddToMainInventory(itemName, amount);
+    }
 }
 
     private void AddToFoodBar(string itemName, int quantity)
@@ -564,51 +578,87 @@ public void UpdateInventoryDisplay()
         return totalItemCount >= cost;
     }
 
-    public void RemoveItems(string itemName, int amount)
+public void RemoveItems(string itemName, int amount)
+{
+    int amountToRemove = amount;
+
+    // First remove items as before
+    RemoveFromContainer(ref amountToRemove, foodBarItems, itemName);
+    if (amountToRemove > 0) RemoveFromContainer(ref amountToRemove, itemBarItems, itemName);
+    if (amountToRemove > 0) RemoveFromContainer(ref amountToRemove, mainInventory, itemName);
+
+    // After removal, consolidate stacks
+    ConsolidateStacks(itemName);
+
+    UpdateInventoryDisplay();
+    itemBar.UpdateItemBar();
+    foodBar.UpdateFoodBar();
+    OnInventoryChanged?.Invoke();
+}
+
+private void RemoveFromContainer(ref int amountToRemove, Dictionary<string, int> container, string itemName)
+{
+    var itemsToRemove = new List<string>();
+    foreach (var pair in container.ToList())
     {
-        int amountToRemove = amount;
-
-        // Remove from FoodBar first
-        if (foodBarItems.ContainsKey(itemName))
+        if (amountToRemove <= 0) break;
+        
+        string baseItemName = pair.Key.Split('_')[0];
+        if (baseItemName == itemName)
         {
-            int foodBarAmount = foodBarItems[itemName];
-            int removeAmount = Mathf.Min(amountToRemove, foodBarAmount);
-            foodBarItems[itemName] -= removeAmount;
-            if (foodBarItems[itemName] <= 0)
-            {
-                foodBarItems.Remove(itemName);
-            }
+            int removeAmount = Mathf.Min(amountToRemove, pair.Value);
+            container[pair.Key] -= removeAmount;
             amountToRemove -= removeAmount;
-        }
-
-        // Then remove from ItemBar
-        if (amountToRemove > 0 && itemBarItems.ContainsKey(itemName))
-        {
-            int itemBarAmount = itemBarItems[itemName];
-            int removeAmount = Mathf.Min(amountToRemove, itemBarAmount);
-            itemBarItems[itemName] -= removeAmount;
-            if (itemBarItems[itemName] <= 0)
+            
+            if (container[pair.Key] <= 0)
             {
-                itemBarItems.Remove(itemName);
-            }
-            amountToRemove -= removeAmount;
-        }
-
-        // Finally, remove from Main Inventory
-        if (amountToRemove > 0 && mainInventory.ContainsKey(itemName))
-        {
-            mainInventory[itemName] -= amountToRemove;
-            if (mainInventory[itemName] <= 0)
-            {
-                mainInventory.Remove(itemName);
+                itemsToRemove.Add(pair.Key);
             }
         }
-
-        UpdateInventoryDisplay();
-        itemBar.UpdateItemBar();
-        foodBar.UpdateFoodBar();
-        OnInventoryChanged?.Invoke();
     }
+    
+    foreach (string key in itemsToRemove)
+    {
+        container.Remove(key);
+    }
+}
+
+private void ConsolidateStacks(string itemName)
+{
+    // Consolidate main inventory stacks
+    ConsolidateContainerStacks(mainInventory, itemName);
+    ConsolidateContainerStacks(itemBarItems, itemName);
+    ConsolidateContainerStacks(foodBarItems, itemName);
+}
+
+private void ConsolidateContainerStacks(Dictionary<string, int> container, string itemName)
+{
+    var stacksToConsolidate = container.Where(x => x.Key.Split('_')[0] == itemName && x.Value < MAX_STACK_SIZE)
+                                     .OrderBy(x => x.Key)
+                                     .ToList();
+    
+    while (stacksToConsolidate.Count > 1)
+    {
+        var firstStack = stacksToConsolidate[0];
+        var secondStack = stacksToConsolidate[1];
+        
+        int spaceInFirstStack = MAX_STACK_SIZE - firstStack.Value;
+        int amountToMove = Mathf.Min(spaceInFirstStack, secondStack.Value);
+        
+        container[firstStack.Key] += amountToMove;
+        container[secondStack.Key] -= amountToMove;
+        
+        if (container[secondStack.Key] <= 0)
+        {
+            container.Remove(secondStack.Key);
+            stacksToConsolidate.RemoveAt(1);
+        }
+        else if (container[firstStack.Key] >= MAX_STACK_SIZE)
+        {
+            stacksToConsolidate.RemoveAt(0);
+        }
+    }
+}
 
     private void LogInventoryContents()
     {

@@ -3557,7 +3557,7 @@ GameObject:
   - component: {fileID: 564810859}
   - component: {fileID: 564810858}
   m_Layer: 5
-  m_Name: Text (TMP) (1)
+  m_Name: LowerMessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3579,7 +3579,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -662, y: -963.2411}
+  m_AnchoredPosition: {x: -650, y: -953}
   m_SizeDelta: {x: 500, y: 131.5178}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &564810858
@@ -6300,53 +6300,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1020755370}
   m_CullTransparentMesh: 1
---- !u!1 &1023389484
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1023389486}
-  - component: {fileID: 1023389485}
-  m_Layer: 0
-  m_Name: MessageManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1023389485
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1023389484}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 388093a631ff81444b091ae7e358b57f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  messageCanvas: {fileID: 1122117295}
-  messageText: {fileID: 0}
-  messageDuration: 3
---- !u!4 &1023389486
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1023389484}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1292.52, y: 630.9861, z: -8.985199}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1031896769
 GameObject:
   m_ObjectHideFlags: 0
@@ -6628,7 +6581,7 @@ GameObject:
   - component: {fileID: 1040603362}
   - component: {fileID: 1040603361}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: UpperMessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8547,10 +8500,13 @@ MonoBehaviour:
   minimapPanel: {fileID: 797875139}
   itemBarPanel: {fileID: 1401847957}
   foodBarPanel: {fileID: 69671056}
-  messageText: {fileID: 1040603363}
   characterPanel: {fileID: 1863745122}
   selectingCursor: {fileID: 2800000, guid: 0bb6a4300f73fb04e88e724726431f17, type: 3}
   defaultCursor: {fileID: 2800000, guid: aff6b351fb1649842b15f4a048295658, type: 3}
+  upperMessageText: {fileID: 1040603363}
+  lowerMessageText: {fileID: 564810860}
+  messagePanel: {fileID: 1686134874}
+  messageText: {fileID: 0}
 --- !u!4 &1414780040
 Transform:
   m_ObjectHideFlags: 0
@@ -10084,8 +10040,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 450}
-  m_SizeDelta: {x: 500, y: 100}
+  m_AnchoredPosition: {x: 0, y: 384}
+  m_SizeDelta: {x: 500, y: 216.0459}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1686134876
 MonoBehaviour:
@@ -12630,7 +12586,6 @@ SceneRoots:
   - {fileID: 511426190}
   - {fileID: 461554076}
   - {fileID: 1414780040}
-  - {fileID: 1023389486}
   - {fileID: 1514373001}
   - {fileID: 1401847962}
   - {fileID: 69671058}

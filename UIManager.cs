@@ -12,7 +12,6 @@ public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     public GameObject minimapPanel;
     public GameObject itemBarPanel;
     public GameObject foodBarPanel;
-    public TextMeshProUGUI messageText;
     public GameObject characterPanel;
     public Texture2D selectingCursor;
     public Texture2D defaultCursor;
@@ -27,35 +26,57 @@ public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 
     public TextMeshProUGUI upperMessageText;  // For requirements/errors
     public TextMeshProUGUI lowerMessageText;  // For item notifications
+
+    public GameObject messagePanel;
+    public TextMeshProUGUI messageText;
+    private float messageDisplayTime = 2f;
+    private Coroutine currentMessageCoroutine;
     
-    public void ShowUpperMessage(string message)
+private void ShowMessage(string message)
+{
+    if (messagePanel != null && lowerMessageText != null)
     {
-        if (upperMessageText != null)
+        messagePanel.SetActive(true);
+        lowerMessageText.text = message;
+        
+        if (currentMessageCoroutine != null)
         {
-            upperMessageText.text = message;
-            upperMessageText.gameObject.SetActive(true);
-            StartCoroutine(HideMessageAfterDelay(upperMessageText, 3f));
+            StopCoroutine(currentMessageCoroutine);
         }
+        currentMessageCoroutine = StartCoroutine(HideMessageAfterDelay());
     }
+}
 
-    public void ShowLowerMessage(string message)
+public void ShowUpperMessage(string message)
+{
+    if (upperMessageText != null)
     {
-        if (lowerMessageText != null)
-        {
-            lowerMessageText.text = message;
-            lowerMessageText.gameObject.SetActive(true);
-            StartCoroutine(HideMessageAfterDelay(lowerMessageText, 3f));
-        }
+        upperMessageText.text = message;
+        upperMessageText.gameObject.SetActive(true);
+        StartCoroutine(HideMessageAfterDelay(upperMessageText, 3f));
     }
+}
 
-    private System.Collections.IEnumerator HideMessageAfterDelay(TextMeshProUGUI messageText, float delay)
+public void ShowLowerMessage(string message)
+{
+    ShowMessage(message);
+}
+
+private System.Collections.IEnumerator HideMessageAfterDelay()
+{
+    yield return new WaitForSeconds(messageDisplayTime);
+    messagePanel.SetActive(false);
+    currentMessageCoroutine = null;
+}
+
+private System.Collections.IEnumerator HideMessageAfterDelay(TextMeshProUGUI messageText, float delay)
+{
+    yield return new WaitForSeconds(delay);
+    if (messageText != null)
     {
-        yield return new WaitForSeconds(delay);
-        if (messageText != null)
-        {
-            messageText.gameObject.SetActive(false);
-        }
+        messageText.gameObject.SetActive(false);
     }
+}
 
     void Start()
     {
@@ -347,14 +368,6 @@ private void CleanUpDragOperation()
     draggedItemName = null;
     dragSourceContainer = null;
     isDragging = false;
-}
-
-private void ShowMessage(string message)
-{
-    if (messageText != null)
-    {
-        ShowLowerMessage(message);  // Use the new lower message for general notifications
-    }
 }
 
 private void SwapSlotContents(Transform sourceSlot, Transform targetSlot)
