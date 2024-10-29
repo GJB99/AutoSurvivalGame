@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84a92b25f83d49b9bc132d206b370281, type: 3}
-  m_Name: Rock
+  m_Name: Smelter
   m_EditorClassIdentifier: 
-  hashCode: 3066581
-  material: {fileID: 1098677625038383661}
+  hashCode: 1609559572
+  material: {fileID: 3451727865070723340}
   materialHashCode: 0
   m_Version: 1.1.0
   m_FaceInfo:
@@ -38,14 +38,14 @@ MonoBehaviour:
     m_StrikethroughOffset: 0
     m_StrikethroughThickness: 0
     m_TabWidth: 0
-  spriteSheet: {fileID: 2800000, guid: 7a9090e978af4bf4fb16f10135c72754, type: 3}
+  spriteSheet: {fileID: 2800000, guid: 4781a412a6e44364ba1a17cc8e810f20, type: 3}
   m_SpriteCharacterTable:
   - m_ElementType: 2
     m_Unicode: 65534
     m_GlyphIndex: 0
     m_Scale: 1
-    m_Name: Rock
-    m_HashCode: 3066581
+    m_Name: Smelter
+    m_HashCode: 1609559572
   m_SpriteGlyphTable:
   - m_Index: 0
     m_Metrics:
@@ -62,35 +62,10 @@ MonoBehaviour:
     m_Scale: 1
     m_AtlasIndex: 0
     m_ClassDefinitionType: 0
-    sprite: {fileID: 21300000, guid: 7a9090e978af4bf4fb16f10135c72754, type: 3}
+    sprite: {fileID: 21300000, guid: 4781a412a6e44364ba1a17cc8e810f20, type: 3}
   spriteInfoList: []
-  fallbackSpriteAssets:
-  - {fileID: 11400000, guid: f01f62a8d1af5f64cb27fbac58afc9c5, type: 2}
-  - {fileID: 11400000, guid: ae04e832d263d88469533e0d10a1db8c, type: 2}
-  - {fileID: 11400000, guid: 71a0dc8e034cf454996286f20a676569, type: 2}
-  - {fileID: 11400000, guid: a10ff821e6c2951478fde21f47a51235, type: 2}
-  - {fileID: 11400000, guid: f264072b8d9c7684888de3c2c8e3987f, type: 2}
-  - {fileID: 11400000, guid: 0dfff37fb6dca3b4ebd0336b00974c48, type: 2}
-  - {fileID: 11400000, guid: 856334658bbe7a84ab782cf4f17ec012, type: 2}
-  - {fileID: 11400000, guid: 74d60da47c5b4d641872809151fecaab, type: 2}
-  - {fileID: 11400000, guid: bb2ca4675b894e94d883995b422b8f0b, type: 2}
-  - {fileID: 11400000, guid: 9106df14ce200ad48aa15302d5b728d2, type: 2}
-  - {fileID: 11400000, guid: 08d39de747889b84aaa6cf1257f76d11, type: 2}
-  - {fileID: 11400000, guid: b51c536b90e0feb468b48734903d545d, type: 2}
-  - {fileID: 11400000, guid: 057a9988054f4704fb0c72b8f8c59b70, type: 2}
-  - {fileID: 11400000, guid: 5a47b6167c9ec7244b13b02797f5d27b, type: 2}
-  - {fileID: 11400000, guid: 0714c1a15cba9a842a877b82cfe9c5f5, type: 2}
-  - {fileID: 11400000, guid: 4b34803a4bf22394bb51a3f8dc3e064c, type: 2}
-  - {fileID: 11400000, guid: 59a12144493540d43924cb0fc5074057, type: 2}
-  - {fileID: 11400000, guid: d76e517814c4ea14990381a252a145ae, type: 2}
-  - {fileID: 11400000, guid: d59d0639067d8b542bcb0b73f47792ff, type: 2}
-  - {fileID: 11400000, guid: caecb99b5fba5764f9fb7196381b5594, type: 2}
-  - {fileID: 11400000, guid: fe55ae27e6c1e8d4e888a8e8c455e62e, type: 2}
-  - {fileID: 11400000, guid: 4df858b50e8c67544bc8f31487af9d11, type: 2}
-  - {fileID: 11400000, guid: f3d338665851ee8438f0a8a90cb0f130, type: 2}
-  - {fileID: 11400000, guid: 0bf58636a96a39644a75c2945199bf30, type: 2}
-  - {fileID: 11400000, guid: 1c36250bc8d6c9a43b222442dc7539fd, type: 2}
---- !u!21 &1098677625038383661
+  fallbackSpriteAssets: []
+--- !u!21 &3451727865070723340
 Material:
   serializedVersion: 8
   m_ObjectHideFlags: 1
@@ -114,7 +89,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 7a9090e978af4bf4fb16f10135c72754, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4781a412a6e44364ba1a17cc8e810f20, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []

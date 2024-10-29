@@ -265,16 +265,14 @@ private void HandleMouseInput()
         }
     }
 
-    void ShowMessage(string message)
+void ShowMessage(string message)
+{
+    if (uiManager != null)
     {
-        if (messageText != null)
-        {
-            messageText.text = message;
-            CancelInvoke("ClearMessage");
-            Invoke("ClearMessage", messageDisplayTime);
-        }
-        Debug.Log(message);
+        uiManager.ShowUpperMessage(message);
     }
+    Debug.Log(message);
+}
 
     void ClearMessage()
     {

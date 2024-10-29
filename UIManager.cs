@@ -18,13 +18,15 @@ public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     private PlayerInventory playerInventory;
     private MessageManager messageManager;
     private Character characterScript;
+
+    private GridPlacementSystem gridSystem;
     private BuildingSystem buildingSystem;  
     private bool isDragging = false;
     private GameObject draggedItem;
     private string draggedItemName;
     private string dragSourceContainer;
 
-    public TextMeshProUGUI upperMessageText;  // For requirements/errors
+    public TextMeshProUGUI upperMessageText;  // For first time information/requirement errors
     public TextMeshProUGUI lowerMessageText;  // For item notifications
 
     public GameObject messagePanel;
@@ -54,9 +56,16 @@ public void ShowUpperMessage(string message)
 {
     if (upperMessageText != null)
     {
-        upperMessageText.text = message;
+        // Make sure the text is enabled and visible
         upperMessageText.gameObject.SetActive(true);
-        StartCoroutine(HideMessageAfterDelay(upperMessageText, 3f));
+        upperMessageText.text = message;
+        
+        // Cancel any previous coroutine that might hide the message
+        if (currentMessageCoroutine != null)
+            StopCoroutine(currentMessageCoroutine);
+            
+        // Start new coroutine to hide message after delay
+        currentMessageCoroutine = StartCoroutine(HideMessageAfterDelay(upperMessageText, messageDisplayTime));
     }
 }
 
@@ -107,9 +116,10 @@ private void UpdateResourceGainMessage()
     foreach (var kvp in resourceGainCounts)
     {
         if (message.Length > 0)
-            message += "\n"; // Replace space with newline
+            message += "\n";
             
-        message += $"<color=#FFFFFF>+{kvp.Value}</color><space=30><size=45><sprite name={kvp.Key}></size><space=2>{kvp.Key}";
+        // Adjusted sprite size and added vertical offset
+        message += $"<color=#FFFFFF>+{kvp.Value}</color><space=20><voffset=10><size=40><sprite name={kvp.Key}></size></voffset><space=1>{kvp.Key}";
     }
     
     lowerMessageText.text = message;
@@ -138,6 +148,12 @@ private System.Collections.IEnumerator ClearResourceGainMessageAfterDelay()
         messageManager = FindObjectOfType<MessageManager>();
         characterScript = FindObjectOfType<Character>();
         buildingSystem = FindObjectOfType<BuildingSystem>();
+        gridSystem = FindObjectOfType<GridPlacementSystem>();
+
+            if (gridSystem == null)
+        {
+            Debug.LogError("GridPlacementSystem not found in the scene!");
+        }
 
         if (inventoryPanel != null) inventoryPanel.SetActive(false);
         if (craftingPanel != null) craftingPanel.SetActive(false);
@@ -178,11 +194,6 @@ public void OnDragEnd(PointerEventData eventData)
         CleanUpDragOperation();
         UpdateAllInventoryDisplays();
     }
-}
-
-private bool IsBuildingItem(string itemName)
-{
-    return itemName == "Smelter" || itemName == "Cooking Station" || itemName == "Processor" || itemName == "Drill" || itemName == "Conveyor";
 }
 
 private void SetupInventoryItemHover()
@@ -368,6 +379,28 @@ public void OnEndDrag(PointerEventData eventData)
         // Reset the original item's appearance
         ResetDraggedItemAppearance(eventData);
 
+        if (draggedItem != null && !string.IsNullOrEmpty(draggedItemName))
+        {
+            // Check if we're dropping on UI or ground
+            if (!EventSystem.current.IsPointerOverGameObject())
+            {
+                // Convert screen position to world position
+                Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
+                worldPos.z = 0;
+
+                // Check if it's a placeable building
+                if (IsBuildingItem(draggedItemName))
+                {
+                    Vector2 snappedPos = gridSystem.SnapToGrid(worldPos);
+                    if (!gridSystem.IsPositionOccupied(snappedPos))
+                    {
+                        buildingSystem.PlaceBuilding(draggedItemName, snappedPos);
+                        playerInventory.RemoveItems(draggedItemName, 1);
+                    }
+                }
+            }
+        }
+
         if (!string.IsNullOrEmpty(targetContainer))
         {
             if (targetContainer != dragSourceContainer)
@@ -392,6 +425,15 @@ public void OnEndDrag(PointerEventData eventData)
         CleanUpDragOperation();
     }
 }
+
+    private bool IsBuildingItem(string itemName)
+    {
+        return itemName == "Smelter" || 
+               itemName == "Processor" || 
+               itemName == "Cooking Station" || 
+               itemName == "Drill" || 
+               itemName == "Conveyor";
+    }
 
 private void ResetDraggedItemAppearance(PointerEventData eventData)
 {

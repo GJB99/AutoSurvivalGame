@@ -133,6 +133,31 @@ private void UpdateUIOnInventoryChange()
     }
 }
 
+public void PlaceBuilding(string buildingName, Vector2 position)
+{
+    GameObject buildingPrefab = GetBuildingPrefab(buildingName);
+    if (buildingPrefab != null)
+    {
+        // Create the building at the specified position
+        GameObject building = Instantiate(buildingPrefab, position, Quaternion.identity);
+        
+        // Ensure the building has a SpriteRenderer
+        SpriteRenderer spriteRenderer = building.GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            spriteRenderer = building.AddComponent<SpriteRenderer>();
+            spriteRenderer.sprite = buildingPrefab.GetComponent<SpriteRenderer>().sprite;
+            spriteRenderer.sortingOrder = 1; // Ensure it renders above the ground
+        }
+
+        // Add a Collider2D if it doesn't exist
+        if (building.GetComponent<Collider2D>() == null)
+        {
+            building.AddComponent<BoxCollider2D>();
+        }
+    }
+}
+
     private void SetupButtonListeners()
     {
         if (gearWeaponsButton != null)
