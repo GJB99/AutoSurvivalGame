@@ -169,6 +169,9 @@ public void PlaceBuilding(string buildingName, Vector2 position)
         {
             renderer.sortingOrder = 5;
         }
+
+        // Add BuildingPickup component
+        building.AddComponent<BuildingPickup>();
     }
 }
 

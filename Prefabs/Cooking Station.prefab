@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 8513378619330645641}
   - component: {fileID: 3418223809321140498}
   - component: {fileID: -54663812613415194}
+  - component: {fileID: 3812622494533466282}
   m_Layer: 11
   m_Name: Cooking Station
-  m_TagString: Clickable
+  m_TagString: UsableBuilding
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -129,4 +130,16 @@ BoxCollider2D:
   m_AutoTiling: 0
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
+  m_EdgeRadius: 2.5
+--- !u!114 &3812622494533466282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7524271903952721873}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83fb236966e0acc4f900603a79bf5008, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

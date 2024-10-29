@@ -70,19 +70,21 @@ void PlaceBuilding()
 {
     if (CanPlaceBuilding())
     {
-        Debug.Log("Attempting to place building at: " + transform.position); // Debug log
+        Debug.Log("Attempting to place building at: " + transform.position);
         
-        // Create the actual building
         GameObject placedBuilding = Instantiate(buildingPrefab, transform.position, Quaternion.identity);
         
         // Set the proper scale and components
         placedBuilding.transform.localScale = new Vector3(0.2f, 0.2f, 1f);
         
+        // Add the Building tag
+        placedBuilding.tag = "UsableBuilding";
+        
         // Adjust collider
         BoxCollider2D collider = placedBuilding.GetComponent<BoxCollider2D>();
         if (collider != null)
         {
-            collider.size = new Vector2(0.4f, 0.4f);
+            collider.size = new Vector2(1f, 1f); // Increased from 0.4f to 1f for better detection
             collider.offset = Vector2.zero;
             collider.isTrigger = false;
         }
@@ -94,6 +96,9 @@ void PlaceBuilding()
             renderer.sortingOrder = 5;
         }
         
+        // Add BuildingPickup component
+        placedBuilding.AddComponent<BuildingPickup>();
+        
         // Notify the building system
         buildingSystem.OnBuildingPlaced();
         gridSystem.HideGridPreview();
@@ -101,11 +106,7 @@ void PlaceBuilding()
         // Clean up the placer
         Destroy(gameObject);
         
-        Debug.Log("Building placed successfully"); // Debug log
-    }
-    else
-    {
-        Debug.Log("Cannot place building - invalid position"); // Debug log
+        Debug.Log("Building placed successfully");
     }
 }
 
