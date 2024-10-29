@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6481417769273224146}
   - component: {fileID: 6337741395698756644}
   - component: {fileID: 3832227114936308429}
-  m_Layer: 8
+  m_Layer: 9
   m_Name: Tin
   m_TagString: Resource
   m_Icon: {fileID: 0}
@@ -103,6 +103,8 @@ MonoBehaviour:
   currentQuantity: 0
   miningRange: 1
   cellSize: 1
+  isFood: 0
+  resourceType: 0
 --- !u!58 &3832227114936308429
 CircleCollider2D:
   m_ObjectHideFlags: 0

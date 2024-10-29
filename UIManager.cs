@@ -373,31 +373,24 @@ public void OnEndDrag(PointerEventData eventData)
 {
     if (isDragging && draggedItem != null && !string.IsNullOrEmpty(draggedItemName))
     {
-        GameObject hitObject = eventData.pointerCurrentRaycast.gameObject;
-        string targetContainer = GetContainerName(hitObject);
+        GameObject droppedObject = eventData.pointerCurrentRaycast.gameObject;
+        string targetContainer = GetContainerName(droppedObject);
 
-        // Reset the original item's appearance
-        ResetDraggedItemAppearance(eventData);
-
-        if (draggedItem != null && !string.IsNullOrEmpty(draggedItemName))
+        // Check if we're dropping outside of UI
+        if (!EventSystem.current.IsPointerOverGameObject())
         {
-            // Check if we're dropping on UI or ground
-            if (!EventSystem.current.IsPointerOverGameObject())
+            if (IsBuildingItem(draggedItemName))
             {
-                // Convert screen position to world position
+                // Show grid and initiate building placement
                 Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
                 worldPos.z = 0;
-
-                // Check if it's a placeable building
-                if (IsBuildingItem(draggedItemName))
-                {
-                    Vector2 snappedPos = gridSystem.SnapToGrid(worldPos);
-                    if (!gridSystem.IsPositionOccupied(snappedPos))
-                    {
-                        buildingSystem.PlaceBuilding(draggedItemName, snappedPos);
-                        playerInventory.RemoveItems(draggedItemName, 1);
-                    }
-                }
+                
+                buildingSystem.InitiateBuildingPlacement(draggedItemName);
+                gridSystem.ShowGridPreview(worldPos);
+                
+                // Don't remove the item yet - it will be removed when placement is confirmed
+                CleanUpDragOperation();
+                return;
             }
         }
 

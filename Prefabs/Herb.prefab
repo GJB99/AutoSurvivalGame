@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1299403272451775466}
   - component: {fileID: 600438223589685620}
   - component: {fileID: 4844527449287361290}
-  m_Layer: 8
+  m_Layer: 9
   m_Name: Herb
   m_TagString: Resource
   m_Icon: {fileID: 0}
@@ -104,6 +104,7 @@ MonoBehaviour:
   miningRange: 1
   cellSize: 1
   isFood: 1
+  resourceType: 0
 --- !u!58 &4844527449287361290
 CircleCollider2D:
   m_ObjectHideFlags: 0

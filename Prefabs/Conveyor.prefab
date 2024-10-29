@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8513378619330645641}
   - component: {fileID: 3418223809321140498}
-  m_Layer: 7
+  m_Layer: 11
   m_Name: Conveyor
   m_TagString: Clickable
   m_Icon: {fileID: 0}

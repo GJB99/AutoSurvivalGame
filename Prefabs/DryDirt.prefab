@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8020492387441083566}
   - component: {fileID: 6666829489135012852}
   - component: {fileID: 3547706037863851104}
-  m_Layer: 6
+  m_Layer: 7
   m_Name: DryDirt
   m_TagString: Ground
   m_Icon: {fileID: 0}
@@ -72,7 +72,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -481612689
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 11bc24d7fd7605e4083adc1d8c76a81c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

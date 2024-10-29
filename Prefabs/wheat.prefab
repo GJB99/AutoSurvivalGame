@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8441699438022887165}
   - component: {fileID: 2642934886225329459}
   - component: {fileID: 8291604499801410861}
-  m_Layer: 8
+  m_Layer: 9
   m_Name: Wheat
   m_TagString: Resource
   m_Icon: {fileID: 0}
@@ -104,6 +104,7 @@ MonoBehaviour:
   miningRange: 1
   cellSize: 1
   isFood: 1
+  resourceType: 0
 --- !u!58 &8291604499801410861
 CircleCollider2D:
   m_ObjectHideFlags: 0

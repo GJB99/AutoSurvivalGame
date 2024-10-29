@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5838018405097873232}
   - component: {fileID: 8116130270159754146}
   - component: {fileID: 3508030499716889085}
-  m_Layer: 8
+  m_Layer: 9
   m_Name: Uranium
   m_TagString: Resource
   m_Icon: {fileID: 0}
@@ -103,6 +103,8 @@ MonoBehaviour:
   currentQuantity: 0
   miningRange: 1
   cellSize: 1
+  isFood: 0
+  resourceType: 0
 --- !u!58 &3508030499716889085
 CircleCollider2D:
   m_ObjectHideFlags: 0

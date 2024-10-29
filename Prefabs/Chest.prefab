@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7831063474133140086}
   - component: {fileID: 6536194536824646305}
-  m_Layer: 7
+  m_Layer: 11
   m_Name: Chest
   m_TagString: UsableBuilding
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1188089401
-  m_SortingLayer: 2
+  m_SortingLayer: 4
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 4681fafb56f1a0b42baf8f6619b3c5c0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

@@ -108,8 +108,19 @@ private GameObject GetBuildingPrefab(string buildingName)
 
 public void OnBuildingPlaced()
 {
-    // Handle successful building placement
-    // For example, remove resources from inventory
+    Debug.Log("Building system notified of placement");
+    
+    // Remove one instance of the building item from inventory
+    if (!string.IsNullOrEmpty(lastSelectedItemName))
+    {
+        playerInventory.RemoveItems(lastSelectedItemName, 1);
+        Debug.Log($"Removed 1 {lastSelectedItemName} from inventory");
+    }
+    else
+    {
+        Debug.LogWarning("No item name stored for removal from inventory");
+    }
+    
     activeBuildingPlacer = null;
 }
 
@@ -138,22 +149,25 @@ public void PlaceBuilding(string buildingName, Vector2 position)
     GameObject buildingPrefab = GetBuildingPrefab(buildingName);
     if (buildingPrefab != null)
     {
-        // Create the building at the specified position
         GameObject building = Instantiate(buildingPrefab, position, Quaternion.identity);
         
-        // Ensure the building has a SpriteRenderer
-        SpriteRenderer spriteRenderer = building.GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null)
+        // Set proper scale
+        building.transform.localScale = new Vector3(0.2f, 0.2f, 1f);
+        
+        // Adjust collider
+        BoxCollider2D collider = building.GetComponent<BoxCollider2D>();
+        if (collider != null)
         {
-            spriteRenderer = building.AddComponent<SpriteRenderer>();
-            spriteRenderer.sprite = buildingPrefab.GetComponent<SpriteRenderer>().sprite;
-            spriteRenderer.sortingOrder = 1; // Ensure it renders above the ground
+            collider.size = new Vector2(0.4f, 0.4f);
+            collider.offset = Vector2.zero;
+            collider.isTrigger = false;
         }
-
-        // Add a Collider2D if it doesn't exist
-        if (building.GetComponent<Collider2D>() == null)
+        
+        // Set sprite properties
+        SpriteRenderer renderer = building.GetComponent<SpriteRenderer>();
+        if (renderer != null)
         {
-            building.AddComponent<BoxCollider2D>();
+            renderer.sortingOrder = 5;
         }
     }
 }

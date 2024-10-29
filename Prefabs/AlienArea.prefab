@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 146181896854133044}
   - component: {fileID: 5328118311792930971}
   - component: {fileID: 897776462734200018}
-  m_Layer: 6
+  m_Layer: 7
   m_Name: AlienArea
   m_TagString: Ground
   m_Icon: {fileID: 0}
