@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!21 &-5420373261212408017
+--- !u!21 &-7518942345497473140
 Material:
   serializedVersion: 8
   m_ObjectHideFlags: 1
@@ -51,10 +51,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84a92b25f83d49b9bc132d206b370281, type: 3}
-  m_Name: Roasted_Carrots
+  m_Name: Herby Carrots
   m_EditorClassIdentifier: 
-  hashCode: 1842306991
-  material: {fileID: -5420373261212408017}
+  hashCode: -452400658
+  material: {fileID: -7518942345497473140}
   materialHashCode: 0
   m_Version: 1.1.0
   m_FaceInfo:
@@ -85,8 +85,8 @@ MonoBehaviour:
     m_Unicode: 65534
     m_GlyphIndex: 0
     m_Scale: 1
-    m_Name: Roasted_Carrots
-    m_HashCode: 1842306991
+    m_Name: Herby Carrots
+    m_HashCode: -452400658
   m_SpriteGlyphTable:
   - m_Index: 0
     m_Metrics:

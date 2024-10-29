@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!21 &-3152175054447048670
+--- !u!21 &-8040236488136550471
 Material:
   serializedVersion: 8
   m_ObjectHideFlags: 1
@@ -51,10 +51,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84a92b25f83d49b9bc132d206b370281, type: 3}
-  m_Name: PlantFiber
+  m_Name: Plant Fiber
   m_EditorClassIdentifier: 
-  hashCode: -1115234243
-  material: {fileID: -3152175054447048670}
+  hashCode: -855148163
+  material: {fileID: -8040236488136550471}
   materialHashCode: 0
   m_Version: 1.1.0
   m_FaceInfo:
@@ -85,8 +85,8 @@ MonoBehaviour:
     m_Unicode: 65534
     m_GlyphIndex: 0
     m_Scale: 1
-    m_Name: PlantFiber
-    m_HashCode: -1115234243
+    m_Name: Plant Fiber
+    m_HashCode: -855148163
   m_SpriteGlyphTable:
   - m_Index: 0
     m_Metrics:

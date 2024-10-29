@@ -31,9 +31,16 @@ public class PlayerInventory : MonoBehaviour
 
 public bool IsFood(string itemName)
 {
+    // Strip any modifiers from the item name
+    string baseItemName = itemName.Split('_')[0];
+    
     // Add your food item names here
-    string[] foodItems = { "Apple", "Herb", "Carrot", "Bread", "Wheat", "Fish" };
-    return System.Array.Exists(foodItems, food => food.Equals(itemName, System.StringComparison.OrdinalIgnoreCase));
+    string[] foodItems = { 
+        "Apple", "Herb", "Carrot", "Bread", "Wheat", "Fish",
+        "Herby Carrots" // Add processed food items
+    };
+    return System.Array.Exists(foodItems, food => 
+        food.Equals(baseItemName, System.StringComparison.OrdinalIgnoreCase));
 }
 
     public void UpdateItemBar()
@@ -169,8 +176,7 @@ public int GetItemCount(string itemName, string containerName)
 
     private bool IsFoodItem(string itemName)
     {
-        // Add your food item names here
-        string[] foodItems = { "Apple", "Herb", "Carrot", "Bread", "Wheat", "Fish", "Herb" };
+        string[] foodItems = { "Apple", "Herb", "Carrot", "Herby Carrots", "Bread", "Wheat", "Fish", "Herb" };
         return System.Array.Exists(foodItems, food => food.Equals(itemName, System.StringComparison.OrdinalIgnoreCase));
     }
 
@@ -557,17 +563,6 @@ public void UpdateInventoryDisplay()
     {
         isBuildingMenuVisible = !isBuildingMenuVisible;
         if (buildingMenuUI != null) buildingMenuUI.SetActive(isBuildingMenuVisible);
-        if (isBuildingMenuVisible) UpdateBuildingMenuDisplay();
-    }
-
-    private void UpdateBuildingMenuDisplay()
-    {
-        if (buildingMenuText != null)
-        {
-            string displayText = "Building Menu:\n";
-            displayText += "Click on items to view details and build";
-            buildingMenuText.text = displayText;
-        }
     }
 
     public bool CanBuild(string itemName, int cost)

@@ -102,10 +102,17 @@ public class FoodBar : MonoBehaviour
         }
     }
 
-    private bool IsFoodItem(string itemName)
-    {
-        // Add your food item names here
-        string[] foodItems = { "Apple", "Carrot", "Wheat", "Herb", "Bread", "Meat", "Fish" };
-        return System.Array.Exists(foodItems, food => food.Equals(itemName, System.StringComparison.OrdinalIgnoreCase));
-    }
+private bool IsFoodItem(string itemName)
+{
+    // Strip any modifiers from the item name
+    string baseItemName = itemName.Split('_')[0];
+    
+    // Add your food item names here
+    string[] foodItems = { 
+        "Apple", "Carrot", "Wheat", "Herb", "Bread", "Meat", "Fish",
+        "Herby Carrots" // Add processed food items
+    };
+    return System.Array.Exists(foodItems, food => 
+        food.Equals(baseItemName, System.StringComparison.OrdinalIgnoreCase));
+}
 }

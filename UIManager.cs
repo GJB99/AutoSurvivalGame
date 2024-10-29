@@ -119,7 +119,7 @@ private void UpdateResourceGainMessage()
             message += "\n";
             
         // Adjusted sprite size and added vertical offset
-        message += $"<color=#FFFFFF>+{kvp.Value}</color><space=20><voffset=10><size=40><sprite name={kvp.Key}></size></voffset><space=1>{kvp.Key}";
+        message += $"<color=#FFFFFF>+{kvp.Value}<space=10>{kvp.Key}<space=20></color><voffset=10><size=40><sprite name={kvp.Key}></size></voffset>";
     }
     
     lowerMessageText.text = message;

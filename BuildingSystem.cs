@@ -52,16 +52,20 @@ public class BuildingSystem : MonoBehaviour
 
     private UIManager uiManager;
     private bool hasShownBuildingMenuMessage = false;
+
+    private bool hasShownFoodStationMessage = false;
+    private float stationCheckInterval = 0.5f; // Check every half second
     
 
-    private void Start()
-    {
-        uiManager = FindObjectOfType<UIManager>();
-        playerInventory = GetComponent<PlayerInventory>();
-        playerInventory.OnInventoryChanged += UpdateUIOnInventoryChange;
-        SetupButtonListeners();
-        PopulateBuildingMenu();
-    }
+private void Start()
+{
+    uiManager = FindObjectOfType<UIManager>();
+    playerInventory = GetComponent<PlayerInventory>();
+    playerInventory.OnInventoryChanged += UpdateUIOnInventoryChange;
+    SetupButtonListeners();
+    PopulateBuildingMenu();
+    StartCoroutine(CheckStationProximity());
+}
 
     private void OnDestroy()
     {
@@ -103,6 +107,35 @@ private GameObject GetBuildingPrefab(string buildingName)
         default:
             Debug.LogWarning($"Unknown building type: {buildingName}");
             return null;
+    }
+}
+
+private IEnumerator CheckStationProximity()
+{
+    WaitForSeconds wait = new WaitForSeconds(stationCheckInterval);
+    bool wasNearStation = false;
+    
+    while (true)
+    {
+        if (buildingMenuPanel.activeSelf && lastSelectedRequiresStation)
+        {
+            bool isNearStation = IsNearRequiredStation(lastSelectedStationName);
+            if (isNearStation != wasNearStation)
+            {
+                wasNearStation = isNearStation;
+                // Update the currently selected item details
+                ShowItemDetails(lastSelectedItemName, lastSelectedCost1, lastSelectedResource1, 
+                              lastSelectedCost2, lastSelectedResource2, lastSelectedCost3, 
+                              lastSelectedResource3, lastSelectedRequiresStation, lastSelectedStationName);
+                
+                // Update all items in the food panel that require stations
+                if (foodPanel != null && foodPanel.activeSelf)
+                {
+                    RefreshCategoryItems(foodPanel);
+                }
+            }
+        }
+        yield return wait;
     }
 }
 
@@ -191,47 +224,52 @@ public void PlaceBuilding(string buildingName, Vector2 position)
             foodButton.onClick.AddListener(() => ShowBuildingCategory("Food"));
     }
 
-    private void ShowBuildingCategory(string category)
-    {
-        // Deactivate all panels first
-        gearPanel.SetActive(false);
-        foodPanel.SetActive(false);
-        componentsPanel.SetActive(false);
-        basePanel.SetActive(false);
-        autoPanel.SetActive(false);
+private void ShowBuildingCategory(string category)
+{
+    // Deactivate all panels first
+    gearPanel.SetActive(false);
+    foodPanel.SetActive(false);
+    componentsPanel.SetActive(false);
+    basePanel.SetActive(false);
+    autoPanel.SetActive(false);
 
-        // Activate the selected panel
-        GameObject activePanel = GetActivePanelForCategory(category);
-        if (activePanel != null)
+    // Activate the selected panel
+    GameObject activePanel = GetActivePanelForCategory(category);
+    if (activePanel != null)
+    {
+        activePanel.SetActive(true);
+        RectTransform contentRect = EnsureScrollRect(activePanel);
+        if (contentRect.childCount == 0)
         {
-            activePanel.SetActive(true);
-            RectTransform contentRect = EnsureScrollRect(activePanel);
-            if (contentRect.childCount == 0)
+            switch (category)
             {
-                switch (category)
-                {
-                    case "Gear":
-                        PopulateGearPanel();
-                        break;
-                    case "Food":
-                        PopulateFoodPanel();
-                        break;
-                    case "Comps":
-                        PopulateComponentsPanel();
-                        break;
-                    case "Base":
-                        PopulateBasePanel();
-                        break;
-                    case "Auto":
-                        PopulateAutoPanel();
-                        break;
-                }
+                case "Food":
+                    if (!hasShownFoodStationMessage)
+                    {
+                        uiManager.ShowUpperMessage("To craft Food, a nearby Cooking Station is required!");
+                        hasShownFoodStationMessage = true;
+                    }
+                    PopulateFoodPanel();
+                    break;
+                case "Gear":
+                    PopulateGearPanel();
+                    break;
+                case "Comps":
+                    PopulateComponentsPanel();
+                    break;
+                case "Base":
+                    PopulateBasePanel();
+                    break;
+                case "Auto":
+                    PopulateAutoPanel();
+                    break;
             }
-            RefreshCategoryItems(activePanel);
         }
-        
-        Debug.Log($"Showing category: {category}");
+        RefreshCategoryItems(activePanel);
     }
+    
+    Debug.Log($"Showing category: {category}");
+}
 
 private void RefreshAllItemDetails()
 {
@@ -356,12 +394,12 @@ private void ParseCost(Transform costTransform, out int cost, out string resourc
 
     private void PopulateFoodPanel()
     {
-        AddItemToPanel(foodPanel, "Roasted Carrots with Herbs", "Roasted_Carrots", 1, "Carrot", 1, "Herb", true, "Cooking Station");
+        AddItemToPanel(foodPanel, "Herby Carrots", "Herby Carrots", 1, "Carrot", 1, "Herb", true, "Cooking Station");
     }
 
     private void PopulateComponentsPanel()
     {
-        AddItemToPanel(componentsPanel, "String", "String", 1, "PlantFiber");
+        AddItemToPanel(componentsPanel, "String", "String", 1, "Plant Fiber");
         AddItemToPanel(componentsPanel, "Iron Ingot", "Iron Ingot", 1, "Iron", 0, null, true, "Smelter");
         AddItemToPanel(componentsPanel, "Copper Ingot", "Copper Ingot", 1, "Copper", 0, null, true, "Smelter");
     }
@@ -464,11 +502,15 @@ private void ShowItemDetails(string itemName, int cost1, string resource1, int c
         details += string.Join(", ", requirements);
         
         if (requiresStation)
-            details += $"\n<color=#FFD700>Requires: {stationName}</color>";
+        {
+            bool isNearStation = IsNearRequiredStation(stationName);
+            string stationColor = isNearStation ? "white" : "orange";
+            details += $"\n<color={stationColor}>Requires: {stationName}</color>";
+        }
 
         itemDetailsText.text = details;
 
-        bool canBuild = CanBuildItem(itemName, cost1, resource1, cost2, resource2, cost3, resource3);
+        bool canBuild = CanBuildItem(itemName, cost1, resource1, cost2, resource2, cost3, resource3, requiresStation, stationName);
         buildButton.interactable = canBuild;
         buildButton.onClick.RemoveAllListeners();
         buildButton.onClick.AddListener(() => BuildItem(itemName, cost1, resource1, cost2, resource2, cost3, resource3));
@@ -498,14 +540,19 @@ private string FormatRequirement(int cost, string resource)
     return $"<color={color}>{cost} {resource}</color>";
 }
 
-private bool CanBuildItem(string itemName, int cost1, string resource1, int cost2, string resource2, int cost3, string resource3)
+private bool CanBuildItem(string itemName, int cost1, string resource1, int cost2, string resource2, int cost3, string resource3, bool requiresStation = false, string stationName = null)
 {
-    bool canBuild = playerInventory.GetTotalItemCount(resource1) >= cost1;
+    // Check resources first
+    bool hasResources = playerInventory.GetTotalItemCount(resource1) >= cost1;
     if (cost2 > 0 && !string.IsNullOrEmpty(resource2))
-        canBuild &= playerInventory.GetTotalItemCount(resource2) >= cost2;
+        hasResources &= playerInventory.GetTotalItemCount(resource2) >= cost2;
     if (cost3 > 0 && !string.IsNullOrEmpty(resource3))
-        canBuild &= playerInventory.GetTotalItemCount(resource3) >= cost3;
-    return canBuild;
+        hasResources &= playerInventory.GetTotalItemCount(resource3) >= cost3;
+
+    // Then check station requirement
+    bool nearStation = !requiresStation || IsNearRequiredStation(stationName);
+    
+    return hasResources && nearStation;
 }
 
 private void BuildItem(string itemName, int cost1, string resource1, int cost2, string resource2, int cost3, string resource3)
@@ -580,18 +627,38 @@ private void BuildItem(string itemName, int cost1, string resource1, int cost2, 
         }
     }
 
+private bool IsNearRequiredStation(string stationName)
+{
+    if (string.IsNullOrEmpty(stationName)) return true; // No station required
+    
+    // Get player position
+    Vector2 playerPosition = transform.position;
+    float detectionRadius = 3f; // Adjust this value to change the detection range
+    
+    // Find all colliders within radius
+    Collider2D[] colliders = Physics2D.OverlapCircleAll(playerPosition, detectionRadius);
+    
+    foreach (Collider2D collider in colliders)
+    {
+        if (collider.CompareTag("UsableBuilding"))
+        {
+            string buildingName = collider.gameObject.name.Replace("(Clone)", "").Trim();
+            if (buildingName == stationName)
+            {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
 public void ToggleBuildingMenu()
 {
     if (buildingMenuPanel != null)
     {
         bool isOpening = !buildingMenuPanel.activeSelf;
         buildingMenuPanel.SetActive(isOpening);
-        
-        if (isOpening && !hasShownBuildingMenuMessage)
-        {
-            uiManager.ShowUpperMessage("Building Menu:\nClick on items to view details and build");
-            hasShownBuildingMenuMessage = true;
-        }
         
         RefreshAllItemDetails();
         if (!string.IsNullOrEmpty(lastSelectedItemName))
