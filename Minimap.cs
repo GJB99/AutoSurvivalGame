@@ -5,9 +5,16 @@ namespace YourGameNamespace
 {
     public class Minimap : MonoBehaviour
     {
+        [Header("Map References")]
         public RawImage minimapImage;
-        public int mapWidth = 300; // Adjust this value based on your desired map size
+        public RawImage fullMapImage;    // Reference to the larger map image
+        public GameObject minimapPanel;   // The small map panel
+        public GameObject fullMapPanel;   // The large map panel
+        private Vector2 defaultMinimapSize;
+        private Vector2 fullMapSize = new Vector2(800, 600);
+        public int mapWidth = 300; 
         public int mapHeight = 200;
+
         public Color groundColor = new Color(0.76f, 0.70f, 0.50f); // Desert color
         public Color copperColor = new Color(1f, 0.65f, 0f); // Orange
         public Color ironColor = new Color(0.75f, 0.75f, 0.8f); // Silver (grey/blueish)
@@ -41,23 +48,79 @@ namespace YourGameNamespace
         private Transform playerTransform;
         private Vector3 lastPlayerPosition;
 
-        void Start()
+void Start()
+{
+    // Store the default minimap size
+    defaultMinimapSize = minimapImage.rectTransform.sizeDelta;
+    
+    // Initialize the full map
+    if (fullMapPanel != null)
+    {
+        fullMapPanel.SetActive(false);
+        
+        // Set the full map panel to fill the screen
+        RectTransform panelRect = fullMapPanel.GetComponent<RectTransform>();
+        panelRect.anchorMin = Vector2.zero;
+        panelRect.anchorMax = Vector2.one;
+        panelRect.sizeDelta = Vector2.zero;
+        panelRect.anchoredPosition = Vector2.zero;
+        
+        if (fullMapImage != null)
         {
-            worldGenerator = FindObjectOfType<WorldGenerator>();
-            biomeManager = FindObjectOfType<BiomeManager>();
-            playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
-            lastPlayerPosition = playerTransform.position;
-
-            minimapTexture = new Texture2D(mapWidth, mapHeight);
-            minimapImage.texture = minimapTexture;
-
-            UpdateMinimap();
+            // Make sure the RawImage component is enabled but the GameObject is hidden
+            fullMapImage.enabled = true;
+            fullMapImage.gameObject.SetActive(false);
+            
+            // Set the full map image to fill its parent panel
+            RectTransform imageRect = fullMapImage.GetComponent<RectTransform>();
+            imageRect.anchorMin = new Vector2(0.1f, 0.1f);
+            imageRect.anchorMax = new Vector2(0.9f, 0.9f);
+            imageRect.sizeDelta = Vector2.zero;
+            imageRect.anchoredPosition = Vector2.zero;
         }
+    }
 
-        void Update()
+    // Rest of your existing Start code
+    worldGenerator = FindObjectOfType<WorldGenerator>();
+    biomeManager = FindObjectOfType<BiomeManager>();
+    playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+    lastPlayerPosition = playerTransform.position;
+
+    minimapTexture = new Texture2D(mapWidth, mapHeight);
+    minimapImage.texture = minimapTexture;
+
+    UpdateMinimap();
+}
+
+void Update()
+{
+    UpdateMinimap();
+    // If full map is active, update it too
+    if (fullMapPanel != null && fullMapPanel.activeSelf && fullMapImage != null && minimapTexture != null)
+    {
+        fullMapImage.texture = minimapTexture;
+    }
+}
+
+public void ToggleFullMap()
+{
+    if (fullMapPanel != null && minimapTexture != null)
+    {
+        bool isFullMapActive = !fullMapPanel.activeSelf;
+        fullMapPanel.SetActive(isFullMapActive);
+        minimapPanel.SetActive(!isFullMapActive);
+        
+        if (fullMapImage != null)
         {
-            UpdateMinimap();
+            // Toggle the GameObject instead of the RawImage component
+            fullMapImage.gameObject.SetActive(isFullMapActive);
+            if (isFullMapActive)
+            {
+                fullMapImage.texture = minimapTexture;
+            }
         }
+    }
+}
 
 void UpdateMinimap()
 {

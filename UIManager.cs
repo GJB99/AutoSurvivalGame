@@ -3,16 +3,20 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
+using YourGameNamespace;
 
 
 public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
+    [Header("UI Panels")]
     public GameObject inventoryPanel;
     public GameObject craftingPanel;
     public GameObject minimapPanel;
     public GameObject itemBarPanel;
     public GameObject foodBarPanel;
     public GameObject characterPanel;
+    public GameObject mapPanel;
+
     public Texture2D selectingCursor;
     public Texture2D defaultCursor;
     private PlayerInventory playerInventory;
@@ -517,21 +521,34 @@ private string GetContainerName(GameObject obj)
     return string.Empty;
 }
 
-    void Update()
+void Update()
+{
+    if (Input.GetKeyDown(KeyCode.Tab))
     {
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            ToggleInventory();
-        }
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            ToggleBuildingMenu();  // Changed from ToggleCrafting
-        }
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            ToggleCharacter();
-        }
+        ToggleInventory();
     }
+    if (Input.GetKeyDown(KeyCode.B))
+    {
+        ToggleBuildingMenu();
+    }
+    if (Input.GetKeyDown(KeyCode.C))
+    {
+        ToggleCharacter();
+    }
+    if (Input.GetKeyDown(KeyCode.M))
+    {
+        ToggleMap();
+    }
+}
+
+public void ToggleMap()
+{
+    Minimap minimap = FindObjectOfType<Minimap>();
+    if (minimap != null)
+    {
+        minimap.ToggleFullMap();
+    }
+}
 
     public void ToggleInventory()
     {
