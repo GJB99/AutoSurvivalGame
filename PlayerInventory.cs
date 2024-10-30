@@ -202,6 +202,8 @@ public bool HasIronPickaxe()
         }
     }
 
+
+
     public List<KeyValuePair<string, int>> GetFoodBarItems()
     {
         return foodBarItems.ToList();
@@ -672,4 +674,10 @@ private void ConsolidateContainerStacks(Dictionary<string, int> container, strin
                GetItemCount(itemName, "FoodBar");
     }
 
+public Dictionary<string, int> EdibleFoodValues = new Dictionary<string, int>()
+{
+    {"Carrot", 5},
+    {"Herby Carrots", 10},
+    // Add more edible foods here
+};
 }

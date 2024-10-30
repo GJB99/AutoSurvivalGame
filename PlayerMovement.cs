@@ -7,6 +7,7 @@ using static Resource;
 public class PlayerMovement : MonoBehaviour
 {
     public float moveSpeed = 5f;
+    public float baseSpeed = 5f;
     public float miningRate = 1f;
     public float cellSize = 1f;
     public TextMeshProUGUI miningInfoText;
@@ -27,12 +28,21 @@ public class PlayerMovement : MonoBehaviour
     private MessageManager messageManager;
     private bool isHoldingRightClick = false;
     private UIManager uiManager;
+    private Camera mainCamera;
 
 void Start()
 {
+    baseSpeed = moveSpeed;
     messageManager = FindObjectOfType<MessageManager>();
     inventory = GetComponent<PlayerInventory>();
     uiManager = FindObjectOfType<UIManager>();
+    mainCamera = Camera.main;
+    
+    if (mainCamera == null)
+    {
+        Debug.LogError("Main Camera not found! Make sure there's a camera tagged as 'MainCamera' in the scene.");
+        return;
+    }
     
     if (inventory == null)
     {
@@ -96,7 +106,9 @@ void Update()
 
 private void UpdateCursor()
 {
-    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+    if (mainCamera == null) return;
+    
+    Vector2 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
     RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
     if (hit.collider != null)
@@ -159,7 +171,9 @@ private void CheckForResourcesInRange()
 
 private void HandleMouseInput()
 {
-    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+    if (mainCamera == null) return;
+    
+    Vector2 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
     RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
     if (hit.collider != null)

@@ -54,8 +54,15 @@ public class Character : MonoBehaviour
     public int critChance = 0;
     public double critX = 1.5;
 
+    private PlayerStats playerStats;
+
     private void Start()
     {
+        playerStats = GetComponent<PlayerStats>();
+        if (playerStats == null)
+        {
+            Debug.LogError("PlayerStats component not found!");
+        }
         SetupTabButtons();
         UpdateStatsDisplay();
         SetupButtonHoverEffects();
@@ -138,17 +145,32 @@ public class Character : MonoBehaviour
         }
     }
 
-    private string BuildDefenseStats()
+private string BuildDefenseStats()
+{
+    StringBuilder defenseStats = new StringBuilder();
+    
+    if (playerStats != null)
     {
-        StringBuilder defenseStats = new StringBuilder();
-        defenseStats.AppendLine($"HP: {health}");
-        defenseStats.AppendLine($"Armor: {armor}");
-        defenseStats.AppendLine($"Magic: {magicResistance}");
-        defenseStats.AppendLine($"Fire: {fireResistance}");
-        defenseStats.AppendLine($"Cold: {coldResistance}");
-        defenseStats.AppendLine($"Light: {lightResistance}");
-        defenseStats.AppendLine($"Necrotic: {necroticResistance}");
-        return defenseStats.ToString();
+        defenseStats.AppendLine($"HP: {playerStats.currentHealth}/{playerStats.maxHealth}");
+        defenseStats.AppendLine($"Satiety: {playerStats.currentSatiety}/{playerStats.maxSatiety}");
+    }
+    else
+    {
+        defenseStats.AppendLine($"HP: {health}/100");
+    }
+    
+    defenseStats.AppendLine($"Armor: {armor}");
+    defenseStats.AppendLine($"Magic Resistance: {magicResistance}");
+    defenseStats.AppendLine($"Fire Resistance: {fireResistance}");
+    defenseStats.AppendLine($"Cold Resistance: {coldResistance}");
+    defenseStats.AppendLine($"Light Resistance: {lightResistance}");
+    defenseStats.AppendLine($"Necrotic Resistance: {necroticResistance}");
+    return defenseStats.ToString();
+}
+
+    public void OnStatsChanged()
+    {
+        UpdateStatsDisplay();
     }
 
     private string BuildOffenseStats()
@@ -164,13 +186,37 @@ public class Character : MonoBehaviour
         return offenseStats.ToString();
     }
 
-    private string BuildUtilityStats()
+private string BuildUtilityStats()
+{
+    StringBuilder utilityStats = new StringBuilder();
+    utilityStats.AppendLine($"Mana: {mana}");
+    
+    if (playerStats != null)
     {
-        StringBuilder utilityStats = new StringBuilder();
-        utilityStats.AppendLine($"Mana: {mana}");
-        utilityStats.AppendLine($"Move Speed: {mvs}");
-        return utilityStats.ToString();
+        float satietyPercentage = (playerStats.currentSatiety / playerStats.maxSatiety) * 100f;
+        string speedModifier = "Normal";
+        float modifiedMvs = mvs;
+        
+        if (satietyPercentage > playerStats.highSatietyThreshold)
+        {
+            speedModifier = $"+{(playerStats.highSatietySpeedMultiplier - 1) * 100}%";
+            modifiedMvs = mvs * playerStats.highSatietySpeedMultiplier;
+        }
+        else if (satietyPercentage < playerStats.lowSatietyThreshold)
+        {
+            speedModifier = $"-{(1 - playerStats.lowSatietySpeedMultiplier) * 100}%";
+            modifiedMvs = mvs * playerStats.lowSatietySpeedMultiplier;
+        }
+        
+        utilityStats.AppendLine($"Move Speed: {Mathf.Round(modifiedMvs)} ({speedModifier})");
     }
+    else
+    {
+        utilityStats.AppendLine($"Move Speed: {mvs}");
+    }
+    
+    return utilityStats.ToString();
+}
 
     public void EquipItem(string slotName, Sprite itemSprite)
     {
