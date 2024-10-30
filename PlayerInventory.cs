@@ -159,7 +159,7 @@ public int GetItemCount(string itemName, string containerName)
                    .Sum(x => x.Value);
 } 
 
-    private Dictionary<string, int> GetContainer(string containerName)
+    public Dictionary<string, int> GetContainer(string containerName)
     {
         switch (containerName)
         {
@@ -579,10 +579,25 @@ public void RemoveItems(string itemName, int amount)
 {
     int amountToRemove = amount;
 
-    // First remove items as before
-    RemoveFromContainer(ref amountToRemove, foodBarItems, itemName);
-    if (amountToRemove > 0) RemoveFromContainer(ref amountToRemove, itemBarItems, itemName);
-    if (amountToRemove > 0) RemoveFromContainer(ref amountToRemove, mainInventory, itemName);
+    // Try to remove from food bar first
+    if (foodBarItems.ContainsKey(itemName))
+    {
+        RemoveFromContainer(amountToRemove, foodBarItems, itemName);
+        amountToRemove = 0;  // Add this line to prevent further removals
+    }
+    
+    // If we still need to remove more, try item bar
+    if (amountToRemove > 0 && itemBarItems.ContainsKey(itemName))
+    {
+        RemoveFromContainer(amountToRemove, itemBarItems, itemName);
+        amountToRemove = 0;
+    }
+    
+    // If we still need to remove more, try main inventory
+    if (amountToRemove > 0 && mainInventory.ContainsKey(itemName))
+    {
+        RemoveFromContainer(amountToRemove, mainInventory, itemName);
+    }
 
     // After removal, consolidate stacks
     ConsolidateStacks(itemName);
@@ -593,30 +608,33 @@ public void RemoveItems(string itemName, int amount)
     OnInventoryChanged?.Invoke();
 }
 
-private void RemoveFromContainer(ref int amountToRemove, Dictionary<string, int> container, string itemName)
+public void RemoveFromContainer(int amount, Dictionary<string, int> container, string itemName)
 {
-    var itemsToRemove = new List<string>();
-    foreach (var pair in container.ToList())
+    if (container.ContainsKey(itemName))
     {
-        if (amountToRemove <= 0) break;
-        
-        string baseItemName = pair.Key.Split('_')[0];
-        if (baseItemName == itemName)
+        container[itemName] -= amount;
+        if (container[itemName] <= 0)
         {
-            int removeAmount = Mathf.Min(amountToRemove, pair.Value);
-            container[pair.Key] -= removeAmount;
-            amountToRemove -= removeAmount;
-            
-            if (container[pair.Key] <= 0)
-            {
-                itemsToRemove.Add(pair.Key);
-            }
+            container.Remove(itemName);
         }
+        //UpdateInventoryDisplay();
+        //UpdateItemBar();
+        //UpdateFoodBar();
+        //OnInventoryChanged?.Invoke();
     }
-    
-    foreach (string key in itemsToRemove)
+}
+
+public void RemoveFromFoodBar(string itemName, int amount)
+{
+    if (foodBarItems.ContainsKey(itemName))
     {
-        container.Remove(key);
+        foodBarItems[itemName] -= amount;
+        if (foodBarItems[itemName] <= 0)
+        {
+            foodBarItems.Remove(itemName);
+        }
+        UpdateFoodBar();
+        OnInventoryChanged?.Invoke();
     }
 }
 

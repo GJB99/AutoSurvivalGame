@@ -64,6 +64,7 @@ public class PlayerStats : MonoBehaviour
 
     private Character characterUI;
     private UIManager uiManager;
+    private bool[] foodKeyPressed = new bool[3];
 
     private void Start()
     {
@@ -78,62 +79,61 @@ public class PlayerStats : MonoBehaviour
         characterUI = GetComponent<Character>();
     }
 
-    private void Update()
+private void Update()
+{
+    // Health regeneration
+    if (Time.time >= nextHealthRegenTime)
     {
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        currentHealth = Mathf.Min(currentHealth + healthRegenRate, maxHealth);
+        nextHealthRegenTime = Time.time + healthRegenInterval;
+    }
+
+    // Satiety decrease
+    if (Time.time >= nextSatietyDecrease)
+    {
+        currentSatiety = Mathf.Max(currentSatiety - satietyDecreaseRate, 0);
+        nextSatietyDecrease = Time.time + satietyDecreaseInterval;
+    }
+
+    // Update movement speed based on satiety
+    UpdateMovementSpeed();
+    
+    // Update UI
+    UpdateUI();
+
+    // Single food input check
+    bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+    
+    for (int i = 0; i < 3; i++)
+    {
+        if (shiftHeld && Input.GetKeyDown(KeyCode.Alpha1 + i))
         {
-            for (int i = 0; i < 3; i++)
+            if (!foodKeyPressed[i])
             {
-                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
-                {
-                    TryEatFood(i);
-                }
+                foodKeyPressed[i] = true;
+                TryEatFood(i);
             }
         }
-        // Health regeneration
-        if (Time.time >= nextHealthRegenTime)
+        else if (Input.GetKeyUp(KeyCode.Alpha1 + i))
         {
-            currentHealth = Mathf.Min(currentHealth + healthRegenRate, maxHealth);
-            nextHealthRegenTime = Time.time + healthRegenInterval;
-        }
-
-        // Satiety decrease
-        if (Time.time >= nextSatietyDecrease)
-        {
-            currentSatiety = Mathf.Max(currentSatiety - satietyDecreaseRate, 0);
-            nextSatietyDecrease = Time.time + satietyDecreaseInterval;
-        }
-
-        // Update movement speed based on satiety
-        UpdateMovementSpeed();
-        
-        // Update UI
-        UpdateUI();
-
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
-                {
-                    TryEatFood(i);
-                }
-            }
+            foodKeyPressed[i] = false;
         }
     }
+}
 
 private void TryEatFood(int slotIndex)
 {
     var foodItems = playerInventory.GetFoodBarItems();
     if (slotIndex < foodItems.Count)
     {
-        string foodName = foodItems[slotIndex].Key.Split('_')[0];
-        if (IsEdibleFood(foodName))
+        string foodName = foodItems[slotIndex].Key;
+        string baseFoodName = foodName.Split('_')[0];
+        if (IsEdibleFood(baseFoodName))
         {
-            ApplyFoodEffect(foodName);
-            playerInventory.RemoveItems(foodItems[slotIndex].Key, 1);
+            ApplyFoodEffect(baseFoodName);
+            playerInventory.RemoveFromFoodBar(foodName, 1);
         }
-        else if (playerInventory.IsFood(foodName)) // If it's a food item but not edible
+        else if (playerInventory.IsFood(baseFoodName))
         {
             if (uiManager != null)
             {
