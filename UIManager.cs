@@ -40,6 +40,8 @@ public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     private Dictionary<string, int> resourceGainCounts = new Dictionary<string, int>();
     private Coroutine resourceMessageCoroutine;
     private float lastResourceTime;
+
+    private LoggingSystem loggingSystem;
     
 private void ShowMessage(string message)
 {
@@ -56,26 +58,31 @@ private void ShowMessage(string message)
     }
 }
 
-public void ShowUpperMessage(string message)
-{
-    if (upperMessageText != null)
+    public void ShowUpperMessage(string message)
     {
-        // Make sure the text is enabled and visible
-        upperMessageText.gameObject.SetActive(true);
-        upperMessageText.text = message;
-        
-        // Cancel any previous coroutine that might hide the message
-        if (currentMessageCoroutine != null)
-            StopCoroutine(currentMessageCoroutine);
+        if (upperMessageText != null)
+        {
+            upperMessageText.gameObject.SetActive(true);
+            upperMessageText.text = message;
             
-        // Start new coroutine to hide message after delay
-        currentMessageCoroutine = StartCoroutine(HideMessageAfterDelay(upperMessageText, messageDisplayTime));
+            if (loggingSystem != null)
+            {
+                loggingSystem.AddMessage(message, false);
+            }
+
+            if (currentMessageCoroutine != null)
+                StopCoroutine(currentMessageCoroutine);
+            currentMessageCoroutine = StartCoroutine(HideMessageAfterDelay(upperMessageText, messageDisplayTime));
+        }
     }
-}
 
 public void ShowLowerMessage(string message)
 {
     ShowMessage(message);
+    if (loggingSystem != null)
+    {
+        loggingSystem.AddMessage(message, true);  // true for inventory messages
+    }
 }
 
 private System.Collections.IEnumerator HideMessageAfterDelay()
@@ -102,14 +109,28 @@ public void ShowResourceGainMessage(string resourceName, int amount)
 
     if (!resourceGainCounts.ContainsKey(resourceName))
     {
-        resourceGainCounts[resourceName] = 0;
-        if (resourceMessageCoroutine != null)
-            StopCoroutine(resourceMessageCoroutine);
-        resourceMessageCoroutine = StartCoroutine(ClearResourceGainMessageAfterDelay());
+        resourceGainCounts[resourceName] = amount;
     }
-    
-    resourceGainCounts[resourceName] += amount;
+    else
+    {
+        resourceGainCounts[resourceName] += amount;
+    }
+
     UpdateResourceGainMessage();
+
+    if (resourceMessageCoroutine != null)
+    {
+        StopCoroutine(resourceMessageCoroutine);
+    }
+    resourceMessageCoroutine = StartCoroutine(ClearResourceGainMessageAfterDelay());
+}
+
+private void CloseAllPanels()
+{
+    if (inventoryPanel != null) inventoryPanel.SetActive(false);
+    if (craftingPanel != null) craftingPanel.SetActive(false);
+    if (characterPanel != null) characterPanel.SetActive(false);
+    if (loggingSystem != null) loggingSystem.ClosePanel();
 }
 
 private void UpdateResourceGainMessage()
@@ -138,6 +159,15 @@ private System.Collections.IEnumerator ClearResourceGainMessageAfterDelay()
         // Check if we've received any new resources in the last 2 seconds
         if (Time.time - lastResourceTime > 2f)
         {
+            // Log the accumulated resources before clearing
+            if (loggingSystem != null)
+            {
+                foreach (var resource in resourceGainCounts)
+                {
+                    loggingSystem.AddMessage($"+{resource.Value} {resource.Key}", true);
+                }
+            }
+            
             resourceGainCounts.Clear();
             lowerMessageText.text = "";
             resourceMessageCoroutine = null;
@@ -153,6 +183,7 @@ private System.Collections.IEnumerator ClearResourceGainMessageAfterDelay()
         characterScript = FindObjectOfType<Character>();
         buildingSystem = FindObjectOfType<BuildingSystem>();
         gridSystem = FindObjectOfType<GridPlacementSystem>();
+        loggingSystem = FindObjectOfType<LoggingSystem>();
 
             if (gridSystem == null)
         {
@@ -539,6 +570,10 @@ void Update()
     {
         ToggleMap();
     }
+    if (Input.GetKeyDown(KeyCode.L))
+    {
+        loggingSystem.ToggleLoggingPanel();
+    }
 }
 
 public void ToggleMap()
@@ -546,6 +581,7 @@ public void ToggleMap()
     Minimap minimap = FindObjectOfType<Minimap>();
     if (minimap != null)
     {
+        CloseAllPanels();
         minimap.ToggleFullMap();
     }
 }
@@ -580,18 +616,25 @@ public void ToggleMap()
         // Update crafting UI with available recipes
     }
 
-    public void ToggleCharacter()
+public void ToggleCharacter()
+{
+    if (characterPanel != null)
     {
-        if (characterPanel != null)
+        if (loggingSystem != null) loggingSystem.ClosePanel();
+        
+        bool isActive = !characterPanel.activeSelf;
+        characterPanel.SetActive(isActive);
+        if (isActive && characterScript != null)
         {
-            bool isActive = !characterPanel.activeSelf;
-            characterPanel.SetActive(isActive);
-            if (isActive && characterScript != null)
-            {
-                characterScript.UpdateStatsDisplay();
-            }
+            characterScript.UpdateStatsDisplay();
         }
     }
+}
+
+public bool IsCharacterPanelActive()
+{
+    return characterPanel != null && characterPanel.activeSelf;
+}
 
     public void ToggleBuildingMenu()
     {
