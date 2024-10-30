@@ -37,22 +37,22 @@ public class Character : MonoBehaviour
     public List<GearSlot> gearSlots;
 
     [Header("Character Stats")]
+    //defense
     public int health = 100;
-    public int armor = 0;
-    public int magicResistance = 0;
-    public int fireResistance = 0;
-    public int coldResistance = 0;
-    public int lightResistance = 0;
-    public int necroticResistance = 0;
-    public int mana = 100;
-    public int strength = 10;
-    public int agility = 10;
-    public int intelligence = 10; 
+    public int physicalResistance = 0;
+    public int heatResistance = 0;
+    public int poisonResistance = 0;
+    public int radiationResistance = 0;
+    //offense
     //public int projectile = 10;
     //public int explosive = 10;
-    public int mvs = 10;
+    public int physicalDamage = 0;
+    public int meleeAttackSpeed = 10;
+    public int rangedAttackSpeed = 10;
     public int critChance = 0;
-    public double critX = 1.5;
+    public double critMultiplier = 1.5;
+    //utility
+    public int mvs = 10;
 
     private PlayerStats playerStats;
 
@@ -151,20 +151,22 @@ private string BuildDefenseStats()
     
     if (playerStats != null)
     {
-        defenseStats.AppendLine($"HP: {playerStats.currentHealth}/{playerStats.maxHealth}");
-        defenseStats.AppendLine($"Satiety: {playerStats.currentSatiety}/{playerStats.maxSatiety}");
+        defenseStats.AppendLine($"HP: {playerStats.maxHealth}");
     }
     else
     {
-        defenseStats.AppendLine($"HP: {health}/100");
+        defenseStats.AppendLine($"HP: {health}");
     }
     
-    defenseStats.AppendLine($"Armor: {armor}");
-    defenseStats.AppendLine($"Magic Resistance: {magicResistance}");
-    defenseStats.AppendLine($"Fire Resistance: {fireResistance}");
-    defenseStats.AppendLine($"Cold Resistance: {coldResistance}");
-    defenseStats.AppendLine($"Light Resistance: {lightResistance}");
-    defenseStats.AppendLine($"Necrotic Resistance: {necroticResistance}");
+    defenseStats.AppendLine($"Physical: {physicalResistance}");
+    defenseStats.AppendLine($"Heat: {heatResistance}");
+    defenseStats.AppendLine($"Poison: {poisonResistance}");
+    defenseStats.AppendLine($"Radiation: {radiationResistance}");
+    //defenseStats.AppendLine($"Magic Resistance: {magicResistance}");
+    //defenseStats.AppendLine($"Fire Resistance: {fireResistance}");
+    //defenseStats.AppendLine($"Cold Resistance: {coldResistance}");
+    //defenseStats.AppendLine($"Light Resistance: {lightResistance}");
+    //defenseStats.AppendLine($"Necrotic Resistance: {necroticResistance}");
     return defenseStats.ToString();
 }
 
@@ -176,20 +178,22 @@ private string BuildDefenseStats()
     private string BuildOffenseStats()
     {
         StringBuilder offenseStats = new StringBuilder();
-        offenseStats.AppendLine($"Strength: {strength}");
-        offenseStats.AppendLine($"Agility: {agility}");
+        offenseStats.AppendLine($"Physical dmg: {physicalDamage}");
+        offenseStats.AppendLine($"Melee as: {meleeAttackSpeed}");
+        offenseStats.AppendLine($"Ranged as: {rangedAttackSpeed}");
+        //offenseStats.AppendLine($"Agility: {agility}");
         //offenseStats.AppendLine($"Projectile: {projectile}");
         //offenseStats.AppendLine($"Explosive: {explosive}");
-        offenseStats.AppendLine($"Magic: {intelligence}");
-        offenseStats.AppendLine($"Crit chance: {critChance}");
-        offenseStats.AppendLine($"Crit X: {critX}");
+        //offenseStats.AppendLine($"Magic: {intelligence}");
+        offenseStats.AppendLine($"Crit %: {critChance}");
+        offenseStats.AppendLine($"Crit X: {critMultiplier}");
         return offenseStats.ToString();
     }
 
 private string BuildUtilityStats()
 {
     StringBuilder utilityStats = new StringBuilder();
-    utilityStats.AppendLine($"Mana: {mana}");
+    //utilityStats.AppendLine($"Mana: {mana}");
     
     if (playerStats != null)
     {

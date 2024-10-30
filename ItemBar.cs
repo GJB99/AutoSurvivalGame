@@ -48,7 +48,14 @@ public void UpdateItemBar()
     {
         Transform itemIconTransform = itemSlots[i].transform.Find("ItemIcon");
         Image itemIconImage = itemIconTransform != null ? itemIconTransform.GetComponent<Image>() : null;
+        Image outlineImage = itemSlots[i].transform.Find("Background")?.GetComponent<Image>();
         TextMeshProUGUI quantityText = itemSlots[i].GetComponentInChildren<TextMeshProUGUI>();
+
+        // Set black outline
+        if (outlineImage != null)
+        {
+            outlineImage.color = new Color(0f, 0f, 0f, 1f); // Black outline
+        }
 
         if (i < itemBarItems.Count)
         {
@@ -58,24 +65,42 @@ public void UpdateItemBar()
 
             if (itemSprite != null)
             {
+                // Item slot with content
                 itemIconImage.sprite = itemSprite;
                 itemIconImage.color = Color.white;
                 quantityText.text = itemBarItems[i].Value.ToString();
+                
+                // Slightly darker background for filled slots
+                Image slotImage = itemSlots[i].GetComponent<Image>();
+                if (slotImage != null)
+                {
+                    slotImage.color = new Color(0.6f, 0.6f, 0.6f, 1f); // Darker gray fill
+                }
             }
             else
             {
-                Debug.LogWarning($"Sprite not found for item: {itemName}. Tried paths: Images/{itemName}, Images/{itemName.Replace(" ", "")}, Images/{itemName.Replace(" ", "_")}");
-                itemIconImage.sprite = null;
-                itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-                quantityText.text = "";
+                Debug.LogWarning($"Sprite not found for item: {itemName}");
+                SetEmptySlotAppearance(itemIconImage, quantityText, itemSlots[i]);
             }
         }
         else
         {
-            itemIconImage.sprite = null;
-            itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-            quantityText.text = "";
+            SetEmptySlotAppearance(itemIconImage, quantityText, itemSlots[i]);
         }
+    }
+}
+
+private void SetEmptySlotAppearance(Image itemIconImage, TextMeshProUGUI quantityText, GameObject slot)
+{
+    itemIconImage.sprite = null;
+    itemIconImage.color = new Color(1f, 1f, 1f, 0f); // Completely transparent
+    quantityText.text = "";
+    
+    // Lighter background for empty slots
+    Image slotImage = slot.GetComponent<Image>();
+    if (slotImage != null)
+    {
+        slotImage.color = new Color(0.8f, 0.8f, 0.8f, 1f); // Light gray fill
     }
 }
 
