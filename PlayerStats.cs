@@ -80,6 +80,16 @@ public class PlayerStats : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+                {
+                    TryEatFood(i);
+                }
+            }
+        }
         // Health regeneration
         if (Time.time >= nextHealthRegenTime)
         {

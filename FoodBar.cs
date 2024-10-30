@@ -40,67 +40,68 @@ public class FoodBar : MonoBehaviour
         }
     }
 
-    public void UpdateFoodBar()
+private void UpdateSlotKeyBindings(GameObject slot, int index)
+{
+    TextMeshProUGUI keyBindText = slot.transform.Find("KeyBindText")?.GetComponent<TextMeshProUGUI>();
+    if (keyBindText != null)
     {
-        List<KeyValuePair<string, int>> foodItems = playerInventory.GetFoodBarItems();
+        keyBindText.text = $"Shift+{index + 1}";
+        keyBindText.fontSize = 10;
+        keyBindText.alignment = TextAlignmentOptions.Center;
+    }
+}
 
-        // Clear existing items
-        foreach (GameObject slot in foodSlots)
+public void UpdateFoodBar()
+{
+    var foodItems = playerInventory.GetFoodBarItems();
+
+    // Clear existing items and update each slot
+    for (int i = 0; i < foodSlots.Count; i++)
+    {
+        GameObject slot = foodSlots[i];
+        
+        // Update key binding text
+        TextMeshProUGUI keyBindText = slot.transform.Find("KeyBindText")?.GetComponent<TextMeshProUGUI>();
+        if (keyBindText != null)
         {
-            Transform itemIconTransform = slot.transform.Find("ItemIcon");
-            if (itemIconTransform != null)
+            keyBindText.text = $"Shift+{i + 1}";
+            keyBindText.fontSize = 10;
+            keyBindText.alignment = TextAlignmentOptions.Center;
+        }
+
+        // Update item display
+        Transform itemIconTransform = slot.transform.Find("ItemIcon");
+        Image itemIconImage = itemIconTransform != null ? itemIconTransform.GetComponent<Image>() : null;
+        TextMeshProUGUI quantityText = slot.GetComponentInChildren<TextMeshProUGUI>();
+
+        if (i < foodItems.Count)
+        {
+            string itemName = foodItems[i].Key;
+            string baseItemName = itemName.Split('_')[0];
+            if (itemIconImage != null)
             {
-                Image itemIconImage = itemIconTransform.GetComponent<Image>();
-                itemIconImage.sprite = null;
-                itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+                itemIconImage.sprite = playerInventory.LoadItemSprite(baseItemName);
+                itemIconImage.color = Color.white;
             }
-            TextMeshProUGUI quantityText = slot.GetComponentInChildren<TextMeshProUGUI>();
+            if (quantityText != null)
+            {
+                quantityText.text = foodItems[i].Value.ToString();
+            }
+        }
+        else
+        {
+            if (itemIconImage != null)
+            {
+                itemIconImage.sprite = null;
+                itemIconImage.color = new Color(1f, 1f, 1f, 0f); // Completely transparent
+            }
             if (quantityText != null)
             {
                 quantityText.text = "";
             }
         }
-
-        for (int i = 0; i < foodSlots.Count; i++)
-        {
-            Image slotBackgroundImage = foodSlots[i].GetComponent<Image>();
-            Transform itemIconTransform = foodSlots[i].transform.Find("ItemIcon");
-            Image itemIconImage = itemIconTransform != null ? itemIconTransform.GetComponent<Image>() : null;
-            TextMeshProUGUI quantityText = foodSlots[i].GetComponentInChildren<TextMeshProUGUI>();
-
-            if (itemIconImage == null)
-            {
-                Debug.LogError("ItemIcon Image component not found in FoodSlot prefab.");
-                continue;
-            }
-
-            if (i < foodItems.Count)
-            {
-                string itemName = foodItems[i].Key;
-                string baseItemName = itemName.Split('_')[0];
-                Sprite itemSprite = playerInventory.LoadItemSprite(baseItemName);
-
-                if (itemSprite != null)
-                {
-                    itemIconImage.sprite = itemSprite;
-                    itemIconImage.color = Color.white;
-                }
-                else
-                {
-                    Debug.Log($"Failed to load sprite: {itemName}");
-                    itemIconImage.sprite = null;
-                    itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-                }
-                quantityText.text = foodItems[i].Value.ToString();
-            }
-            else
-            {
-                itemIconImage.sprite = null;
-                itemIconImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-                quantityText.text = "";
-            }
-        }
     }
+}
 
 private bool IsFoodItem(string itemName)
 {
