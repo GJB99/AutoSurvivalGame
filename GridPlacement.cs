@@ -71,7 +71,7 @@ public bool IsPositionOccupied(Vector2 position)
     {
         // Check if the collider belongs to a resource or building
         if (!collider.isTrigger && 
-            (collider.CompareTag("Resource") || collider.CompareTag("Building")))
+            (collider.CompareTag("Resource") || collider.CompareTag("UsableBuilding")))
         {
             Debug.Log($"Collision detected with: {collider.gameObject.name} at {snappedPos}");
             return true;

@@ -2,7 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
-using System.Collections.Generic; 
+using System.Collections.Generic;
+using System.Linq; 
 
 public class PlayerStats : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class PlayerStats : MonoBehaviour
         public float duration;
         public float maxHealthBonus;
         public GameObject buffIcon;
+        public Coroutine timerCoroutine;
     }
 
     [Header("Stats")]
@@ -61,11 +63,13 @@ public class PlayerStats : MonoBehaviour
     public Transform passiveBuffContainer; // New container for passive buffs like satiety
 
     private Character characterUI;
+    private UIManager uiManager;
 
     private void Start()
     {
         playerMovement = GetComponent<PlayerMovement>();
         playerInventory = GetComponent<PlayerInventory>();
+        uiManager = FindObjectOfType<UIManager>();
         if (playerMovement == null)
         {
             Debug.LogError("PlayerMovement component not found!");
@@ -108,19 +112,26 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-    private void TryEatFood(int slotIndex)
+private void TryEatFood(int slotIndex)
+{
+    var foodItems = playerInventory.GetFoodBarItems();
+    if (slotIndex < foodItems.Count)
     {
-        var foodItems = playerInventory.GetFoodBarItems();
-        if (slotIndex < foodItems.Count)
+        string foodName = foodItems[slotIndex].Key.Split('_')[0];
+        if (IsEdibleFood(foodName))
         {
-            string foodName = foodItems[slotIndex].Key.Split('_')[0];
-            if (IsEdibleFood(foodName))
+            ApplyFoodEffect(foodName);
+            playerInventory.RemoveItems(foodItems[slotIndex].Key, 1);
+        }
+        else if (playerInventory.IsFood(foodName)) // If it's a food item but not edible
+        {
+            if (uiManager != null)
             {
-                ApplyFoodEffect(foodName);
-                playerInventory.RemoveItems(foodItems[slotIndex].Key, 1);
+                uiManager.ShowUpperMessage("This food is inedible, cook it first!");
             }
         }
     }
+}
 
     private void ApplyFoodEffect(string foodName)
     {
@@ -151,43 +162,47 @@ public class PlayerStats : MonoBehaviour
 
 private void AddFoodEffect(string foodName, float satietyAmount)
 {
-    // Add to general food effects list
     FoodEffect effect = new FoodEffect
     {
         name = foodName,
-        duration = satietyAmount * 60f
+        duration = satietyAmount * 15f
     };
     
-    // Check if this food provides a buff
     bool hasBuff = false;
     
     if (foodName == "Herby Carrots")
     {
         hasBuff = true;
         effect.maxHealthBonus = 10f;
+        
+        FoodEffect existingBuff = activeBuffs.FirstOrDefault(b => b.name == foodName);
+        if (existingBuff != null)
+        {
+            // Stop the existing coroutine
+            if (existingBuff.timerCoroutine != null)
+            {
+                StopCoroutine(existingBuff.timerCoroutine);
+            }
+            
+            // Always refresh the duration when eating the same food
+            TextMeshProUGUI existingBuffText = existingBuff.buffIcon.GetComponentInChildren<TextMeshProUGUI>();
+            existingBuffText.text = $"+10 HP\n{FormatTime(effect.duration)}";
+            existingBuff.duration = effect.duration;
+            existingBuff.timerCoroutine = StartCoroutine(UpdateBuffDuration(existingBuffText, effect.duration));
+            return;
+        }
+        
         maxHealth += effect.maxHealthBonus;
-        
         GameObject buffObj = Instantiate(buffIconPrefab, foodBuffContainer);
-        buffObj.GetComponentInChildren<TextMeshProUGUI>().text = "+10 HP";
+        TextMeshProUGUI newBuffText = buffObj.GetComponentInChildren<TextMeshProUGUI>();
+        newBuffText.text = $"+10 HP\n{FormatTime(effect.duration)}";
         
-        GameObject countdownObj = new GameObject("Countdown");
-        countdownObj.transform.SetParent(buffObj.transform, false);
-        TextMeshProUGUI countdownText = countdownObj.AddComponent<TextMeshProUGUI>();
-        RectTransform rectTransform = countdownObj.GetComponent<RectTransform>();
-        
-        rectTransform.localPosition = new Vector3(0, -25, 0);
-        rectTransform.sizeDelta = new Vector2(100, 20);
-        rectTransform.localScale = Vector3.one;
-        
-        countdownText.fontSize = 12;
-        countdownText.alignment = TextAlignmentOptions.Center;
-        
-        StartCoroutine(UpdateBuffDuration(countdownText, effect.duration));
         effect.buffIcon = buffObj;
+        effect.timerCoroutine = StartCoroutine(UpdateBuffDuration(newBuffText, effect.duration));
     }
 
-    // Manage lists separately
-    if (hasBuff)
+    // Only add to lists if it's a new buff
+    if (hasBuff && !activeBuffs.Any(b => b.name == foodName))
     {
         if (activeBuffs.Count >= maxActiveEffects)
         {
@@ -195,7 +210,7 @@ private void AddFoodEffect(string foodName, float satietyAmount)
         }
         activeBuffs.Add(effect);
     }
-    else
+    else if (!hasBuff)
     {
         if (activeEffects.Count >= maxActiveEffects)
         {
@@ -203,6 +218,13 @@ private void AddFoodEffect(string foodName, float satietyAmount)
         }
         activeEffects.Add(effect);
     }
+}
+
+private string FormatTime(float seconds)
+{
+    int minutes = Mathf.FloorToInt(seconds / 60f);
+    int remainingSeconds = Mathf.FloorToInt(seconds % 60f);
+    return $"{minutes:00}:{remainingSeconds:00}";
 }
 
 private void RemoveOldestBuff()
@@ -220,29 +242,40 @@ private void RemoveOldestBuff()
     }
 }
 
-private IEnumerator UpdateBuffDuration(TextMeshProUGUI countdownText, float duration)
+private IEnumerator UpdateBuffDuration(TextMeshProUGUI buffText, float duration)
 {
     float remainingTime = duration;
+    string baseText = "+10 HP";
+    float warningThreshold = duration * 0.25f;
     
-    while (remainingTime > 0)
+    while (remainingTime >= 0)
     {
-        int minutes = Mathf.FloorToInt(remainingTime / 60);
-        int seconds = Mathf.FloorToInt(remainingTime % 60);
-        countdownText.text = $"{minutes:00}:{seconds:00}";
+        string timeText = FormatTime(remainingTime);
+        if (remainingTime <= warningThreshold)
+        {
+            buffText.text = $"{baseText}\n<color=#FF6600>{timeText}</color>";
+        }
+        else
+        {
+            buffText.text = $"{baseText}\n{timeText}";
+        }
+        
+        if (remainingTime == 0)
+        {
+            // Find and remove the buff
+            FoodEffect buffToRemove = activeBuffs.FirstOrDefault(b => b.buffIcon.GetComponentInChildren<TextMeshProUGUI>() == buffText);
+            if (buffToRemove != null)
+            {
+                maxHealth -= buffToRemove.maxHealthBonus;
+                Destroy(buffToRemove.buffIcon);
+                activeBuffs.Remove(buffToRemove);
+                UpdateUI();
+            }
+            yield break;
+        }
         
         yield return new WaitForSeconds(1f);
         remainingTime -= 1f;
-    }
-    
-    // Effect has expired, remove it
-    for (int i = 0; i < activeEffects.Count; i++)
-    {
-        if (activeEffects[i].buffIcon != null && 
-            activeEffects[i].buffIcon.GetComponentInChildren<TextMeshProUGUI>() == countdownText)
-        {
-            RemoveEffect(i);
-            break;
-        }
     }
 }
 
