@@ -24,6 +24,10 @@ namespace YourGameNamespace
         private float savedMessagesScrollPosition = 1f;
         private float savedInventoryScrollPosition = 1f;
 
+        private Button currentSelectedButton;
+        private Color normalColor = new Color(0.7f, 0.7f, 0.7f);
+        private Color selectedColor = new Color(0.5f, 0.5f, 0.5f);
+
         void Start()
         {
             loggingPanel.SetActive(false);
@@ -34,7 +38,7 @@ namespace YourGameNamespace
             messagesScrollRect = messagesContent.GetComponentInParent<ScrollRect>();
             inventoryScrollRect = inventoryContent.GetComponentInParent<ScrollRect>();
             
-            ShowTab(messagesContent); // Default to messages tab
+            ShowTab(messagesContent);
         }
 
         public void ToggleLoggingPanel()
@@ -73,13 +77,44 @@ namespace YourGameNamespace
             }
         }
 
-        private void ShowTab(GameObject tabContent)
+private void ShowTab(GameObject tabContent)
+{
+    // Reset previous button color if exists
+    if (currentSelectedButton != null)
+    {
+        Image buttonImage = currentSelectedButton.GetComponent<Image>();
+        if (buttonImage != null)
         {
-            messagesContent.SetActive(false);
-            inventoryContent.SetActive(false);
-            tabContent.SetActive(true);
-            UpdateDisplays();
+            Color color = normalColor;
+            color.a = buttonImage.color.a;
+            buttonImage.color = color;
         }
+    }
+
+    // Set new button color based on tab
+    Button selectedButton = null;
+    if (tabContent == messagesContent)
+        selectedButton = messagesTabButton;
+    else if (tabContent == inventoryContent)
+        selectedButton = inventoryTabButton;
+
+    if (selectedButton != null)
+    {
+        Image buttonImage = selectedButton.GetComponent<Image>();
+        if (buttonImage != null)
+        {
+            Color color = selectedColor;
+            color.a = buttonImage.color.a;
+            buttonImage.color = color;
+        }
+        currentSelectedButton = selectedButton;
+    }
+
+    messagesContent.SetActive(false);
+    inventoryContent.SetActive(false);
+    tabContent.SetActive(true);
+    UpdateDisplays();
+}
 
         private System.Collections.IEnumerator RestoreScrollPosition()
         {

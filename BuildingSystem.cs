@@ -56,6 +56,9 @@ public class BuildingSystem : MonoBehaviour
     private bool hasShownFoodStationMessage = false;
     private float stationCheckInterval = 0.5f; // Check every half second
     
+    private Button currentSelectedButton;
+    private Color normalColor = new Color(0.7f, 0.7f, 0.7f);
+    private Color selectedColor = new Color(0.5f, 0.5f, 0.5f);
 
 private void Start()
 {
@@ -226,6 +229,53 @@ public void PlaceBuilding(string buildingName, Vector2 position)
 
 private void ShowBuildingCategory(string category)
 {
+    // Reset previous button color if exists
+    if (currentSelectedButton != null)
+    {
+        Image buttonImage = currentSelectedButton.GetComponent<Image>();
+        if (buttonImage != null)
+        {
+            Color color = normalColor;
+            color.a = buttonImage.color.a; // Preserve alpha
+            buttonImage.color = color;
+        }
+    }
+
+    // Set new button color based on category
+    Button selectedButton = null;
+    switch (category)
+    {
+        case "Gear":
+            selectedButton = gearWeaponsButton;
+            break;
+        case "Food":
+            selectedButton = foodButton;
+            break;
+        case "Auto":
+            selectedButton = factoriesAutomationButton;
+            break;
+        case "Comps":
+            selectedButton = componentsButton;
+            break;
+        case "Base":
+            selectedButton = baseStationsButton;
+            break;
+        case "Transport":
+            selectedButton = transportButton;
+            break;
+    }
+
+    if (selectedButton != null)
+    {
+        Image buttonImage = selectedButton.GetComponent<Image>();
+        if (buttonImage != null)
+        {
+            Color color = selectedColor;
+            color.a = buttonImage.color.a; // Preserve alpha
+            buttonImage.color = color;
+        }
+        currentSelectedButton = selectedButton;
+    }
     // Deactivate all panels first
     gearPanel.SetActive(false);
     foodPanel.SetActive(false);

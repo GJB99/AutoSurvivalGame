@@ -56,6 +56,10 @@ public class Character : MonoBehaviour
 
     private PlayerStats playerStats;
 
+    private Button currentSelectedButton;
+    private Color normalColor = new Color(0.7f, 0.7f, 0.7f);
+    private Color selectedColor = new Color(0.5f, 0.5f, 0.5f);
+
     private void Start()
     {
         playerStats = GetComponent<PlayerStats>();
@@ -66,6 +70,7 @@ public class Character : MonoBehaviour
         SetupTabButtons();
         UpdateStatsDisplay();
         SetupButtonHoverEffects();
+        ShowTab(characterContent);
     }
 
     private void SetupButtonHoverEffects()
@@ -114,18 +119,50 @@ public class Character : MonoBehaviour
         ShowTab(characterContent);
     }
 
-    public void ShowTab(GameObject tabContent)
+public void ShowTab(GameObject tabContent)
+{
+    // Reset previous button color if exists
+    if (currentSelectedButton != null)
     {
-        characterContent.SetActive(false);
-        skillsContent.SetActive(false);
-        powersContent.SetActive(false);
-        minionContent.SetActive(false);
-
-        tabContent.SetActive(true);
-
-        // Debug log to check if the method is being called
-        Debug.Log("Showing tab: " + tabContent.name);
+        Image buttonImage = currentSelectedButton.GetComponent<Image>();
+        if (buttonImage != null)
+        {
+            Color color = normalColor;
+            color.a = buttonImage.color.a;
+            buttonImage.color = color;
+        }
     }
+
+    // Set new button color based on tab
+    Button selectedButton = null;
+    if (tabContent == characterContent)
+        selectedButton = characterTabButton;
+    else if (tabContent == skillsContent)
+        selectedButton = skillsTabButton;
+    else if (tabContent == powersContent)
+        selectedButton = powersTabButton;
+    else if (tabContent == minionContent)
+        selectedButton = minionTabButton;
+
+    if (selectedButton != null)
+    {
+        Image buttonImage = selectedButton.GetComponent<Image>();
+        if (buttonImage != null)
+        {
+            Color color = selectedColor;
+            color.a = buttonImage.color.a;
+            buttonImage.color = color;
+        }
+        currentSelectedButton = selectedButton;
+    }
+
+    characterContent.SetActive(false);
+    skillsContent.SetActive(false);
+    powersContent.SetActive(false);
+    minionContent.SetActive(false);
+
+    tabContent.SetActive(true);
+}
 
     public void UpdateStatsDisplay()
     {
