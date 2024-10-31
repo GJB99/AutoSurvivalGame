@@ -13,8 +13,8 @@ public class WorldSetup : MonoBehaviour
     public float tileSize = 8f; 
     public int visibleTilesX = 25; // Adjust these values to control how many tiles are visible
     public int visibleTilesY = 25;
-    public int worldSizeX = 200;
-    public int worldSizeY = 200;
+    public int worldSizeX = 400;
+    public int worldSizeY = 400;
 
     void Start()
     {
@@ -77,13 +77,13 @@ public class WorldSetup : MonoBehaviour
         float distanceFromCenter = Vector2.Distance(new Vector2(x, y), new Vector2(worldSizeX / 2, worldSizeY / 2));
         float maxDistance = Mathf.Sqrt(worldSizeX * worldSizeX + worldSizeY * worldSizeY) / 2;
 
-        if (distanceFromCenter < maxDistance * 0.15f)
+        if (distanceFromCenter < maxDistance * 0.25f)
             return BiomeType.Forest;
-        else if (distanceFromCenter < maxDistance * 0.35f)
+        else if (distanceFromCenter < maxDistance * 0.45f)
             return BiomeType.Desert;
-        else if (distanceFromCenter < maxDistance * 0.55f)
+        else if (distanceFromCenter < maxDistance * 0.65f)
             return BiomeType.IndustrialWasteland;
-        else if (distanceFromCenter < maxDistance * 0.75f)
+        else if (distanceFromCenter < maxDistance * 0.85f)
             return BiomeType.AlienArea;
         else
             return BiomeType.Lava;

@@ -3520,6 +3520,7 @@ GameObject:
   - component: {fileID: 511426195}
   - component: {fileID: 511426196}
   - component: {fileID: 511426197}
+  - component: {fileID: 511426198}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -3719,6 +3720,7 @@ MonoBehaviour:
   drillPrefab: {fileID: 7524271903952721873, guid: eb762814cd3d79342bbed7ad4153ac91, type: 3}
   conveyorBeltPrefab: {fileID: 7524271903952721873, guid: dbc26e9ec583f1f4e98823f7437f24d8, type: 3}
   cookingStationPrefab: {fileID: 7524271903952721873, guid: f45f4e39915e85549b85552691e93de6, type: 3}
+  ovenPrefab: {fileID: 0}
   processorPrefab: {fileID: 7524271903952721873, guid: 3c9f7227983a9db4cbacefe96db969bc, type: 3}
   messageText: {fileID: 1040603363}
   messageDisplayTime: 2
@@ -3865,6 +3867,21 @@ MonoBehaviour:
   inventoryTabButton: {fileID: 1196691902}
   messagesText: {fileID: 191524443}
   inventoryText: {fileID: 928734219}
+--- !u!114 &511426198
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 511426186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c83434bcaefa0fe49b16d05665119e58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arrowPrefab: {fileID: 7524271903952721873, guid: eddebc8491a1a7a49a4db5874d2a9b13, type: 3}
+  arrowSpeed: 20
+  bowCooldown: 0.5
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -10982,15 +10999,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rockPrefab: {fileID: 805409599776951466, guid: ced56ee5d7b5b4f4d92bc01c21b49c73, type: 3}
-  copperPrefab: {fileID: 2356628207637518155, guid: 27e3f0e315b07b14bbe782a40384c651, type: 3}
-  ironPrefab: {fileID: 3828313598214977607, guid: dc9c3b6cc322fac4b841407f9fdd2fa2, type: 3}
+  wheatPrefab: {fileID: 6146400596051532876, guid: 316ad6d8156153f478a0401454da6722, type: 3}
+  carrotPrefab: {fileID: 1021408668071291336, guid: 79cb3ba92864ed544adc08c3626e8552, type: 3}
   waterPrefab: {fileID: 5249759396088340113, guid: 5bd958cd7860d364a95f0eb39110eec8, type: 3}
   woodPrefab: {fileID: 3097219435967893176, guid: 64dec19726da02a4f9393cd9672fcb9d, type: 3}
   herbPrefab: {fileID: 7181196766389292745, guid: 260fb638772c42f4780f65a0f30d8e21, type: 3}
+  plantFiberPrefab: {fileID: 3828313598214977607, guid: 2de0471758504cc4791193246dd281e4, type: 3}
   tinPrefab: {fileID: 1727208986690218442, guid: 27fd69a8f9ed60445a4db6b5389dffe5, type: 3}
   clayPrefab: {fileID: 5528159813893847854, guid: 4be72aae217edca47b17820b66d5fe85, type: 3}
-  wheatPrefab: {fileID: 6146400596051532876, guid: 316ad6d8156153f478a0401454da6722, type: 3}
-  carrotPrefab: {fileID: 1021408668071291336, guid: 79cb3ba92864ed544adc08c3626e8552, type: 3}
+  copperPrefab: {fileID: 2356628207637518155, guid: 27e3f0e315b07b14bbe782a40384c651, type: 3}
+  ironPrefab: {fileID: 3828313598214977607, guid: dc9c3b6cc322fac4b841407f9fdd2fa2, type: 3}
   oilPrefab: {fileID: 5339014619207998141, guid: e30fa1f8918565040ae5c9cdd1fcd398, type: 3}
   scrapPrefab: {fileID: 5886617449371394634, guid: 895cf1cc72c88674a94f9627a8409041, type: 3}
   titaniumPrefab: {fileID: 5630844657626583270, guid: 4b22425109e573d4282b1a776e78539d, type: 3}

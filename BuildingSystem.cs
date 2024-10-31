@@ -12,6 +12,7 @@ public class BuildingSystem : MonoBehaviour
     public GameObject conveyorBeltPrefab;
     public GameObject cookingStationPrefab;
     public GameObject processorPrefab;
+    public GameObject ovenPrefab;
 
     private PlayerInventory playerInventory;
     public TextMeshProUGUI messageText;
@@ -296,7 +297,7 @@ private void ShowBuildingCategory(string category)
                 case "Food":
                     if (!hasShownFoodStationMessage)
                     {
-                        uiManager.ShowUpperMessage("To craft Food, a nearby Cooking Station is required!");
+                        uiManager.ShowUpperMessage("To craft Food, a nearby Cooking Station or Oven is required!");
                         hasShownFoodStationMessage = true;
                     }
                     PopulateFoodPanel();
@@ -440,6 +441,7 @@ private void ParseCost(Transform costTransform, out int cost, out string resourc
         AddItemToPanel(gearPanel, "Iron Pickaxe", "Iron Pickaxe", 1, "Stone Pickaxe", 10, "Iron");
         AddItemToPanel(gearPanel, "Wood Helmet", "Wood Helmet", 10, "Wood", 3, "String");
         AddItemToPanel(gearPanel, "Bow", "Bow", 10, "Wood", 2, "String");
+        AddItemToPanel(gearPanel, "Arrow", "Arrow", 1, "Wood", 1, "Rock");
     }
 
     private void PopulateFoodPanel()
@@ -459,6 +461,7 @@ private void ParseCost(Transform costTransform, out int cost, out string resourc
         AddItemToPanel(basePanel, "Smelter", "Smelter", 5, "Copper", 5, "Iron", false, null, 10, "Rock");
         AddItemToPanel(basePanel, "Processor", "Processor", 10, "Iron Ingot", 10, "Copper Ingot");
         AddItemToPanel(basePanel, "Cooking Station", "Cooking Station", 10, "Wood", 5, "Iron");
+        AddItemToPanel(basePanel, "Oven", "Oven", 10, "Wood", 5, "Rock");
     }
 
     private void PopulateAutoPanel()

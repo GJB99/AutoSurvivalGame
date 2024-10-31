@@ -5,18 +5,23 @@ namespace YourGameNamespace
 {
     public class WorldGenerator : MonoBehaviour
     {
+        [Header("Forest")]
         public GameObject rockPrefab;
-        public GameObject copperPrefab;
-        public GameObject ironPrefab;
+        public GameObject wheatPrefab;
+        public GameObject carrotPrefab;
         public GameObject waterPrefab;
         public GameObject woodPrefab;
         public GameObject herbPrefab;
+        public GameObject plantFiberPrefab;
         public GameObject tinPrefab;
         public GameObject clayPrefab;
-        public GameObject wheatPrefab;
-        public GameObject carrotPrefab;
+        [Header("Desert")]
+        public GameObject copperPrefab;
+        public GameObject ironPrefab;
+        [Header("Industrial")]
         public GameObject oilPrefab;
         public GameObject scrapPrefab;
+        [Header("Alien")]
         public GameObject titaniumPrefab;
         public GameObject uraniumPrefab;
 
@@ -74,19 +79,24 @@ namespace YourGameNamespace
             
             // Generate specific resources near borders
             GenerateBorderResources(centerTile, herbPrefab, BiomeType.Forest, 0.2f);
-            GenerateBorderResources(centerTile, clayPrefab, BiomeType.Desert, 0.2f);
+            GenerateBorderResources(centerTile, clayPrefab, BiomeType.Forest, 0.2f);
 
             // Generate other resources
+            // Forest
             GenerateSpecificResourceVein(centerTile, woodPrefab, BiomeType.Forest);
             GenerateSpecificResourceVein(centerTile, herbPrefab, BiomeType.Forest);
             GenerateSpecificResourceVein(centerTile, rockPrefab, BiomeType.Forest);
+            GenerateSpecificResourceVein(centerTile, plantFiberPrefab, BiomeType.Forest);
+            GenerateSpecificResourceVein(centerTile, tinPrefab, BiomeType.Forest);
+            GenerateSpecificResourceVein(centerTile, wheatPrefab, BiomeType.Forest);
+            GenerateSpecificResourceVein(centerTile, carrotPrefab, BiomeType.Forest);
+            // Desert
             GenerateSpecificResourceVein(centerTile, copperPrefab, BiomeType.Desert);
             GenerateSpecificResourceVein(centerTile, ironPrefab, BiomeType.Desert);
-            GenerateSpecificResourceVein(centerTile, tinPrefab, BiomeType.Desert);
-            GenerateSpecificResourceVein(centerTile, wheatPrefab, BiomeType.Desert);
-            GenerateSpecificResourceVein(centerTile, carrotPrefab, BiomeType.Desert);
+            // Industrial
             GenerateSpecificResourceVein(centerTile, oilPrefab, BiomeType.IndustrialWasteland);
             GenerateSpecificResourceVein(centerTile, scrapPrefab, BiomeType.IndustrialWasteland);
+            // Alien
             GenerateSpecificResourceVein(centerTile, titaniumPrefab, BiomeType.AlienArea);
             GenerateSpecificResourceVein(centerTile, uraniumPrefab, BiomeType.AlienArea);
 

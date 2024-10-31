@@ -336,7 +336,7 @@ void MineResource()
 
 bool CanMineWithCurrentTools(string resourceName)
 {
-    if (resourceName == "Rock" || resourceName == "Wood" || resourceName == "Clay" || resourceName == "Tin" || resourceName == "Uranium" || resourceName == "Scrap" || resourceName == "Oil" || resourceName == "Titanium")
+    if (resourceName == "Rock" || resourceName == "Wood" || resourceName == "Plant Fiber" || resourceName == "Clay" || resourceName == "Tin" || resourceName == "Uranium" || resourceName == "Scrap" || resourceName == "Oil" || resourceName == "Titanium")
         return true;
     else if (resourceName == "Iron" && (inventory.HasStonePickaxe() || inventory.HasIronPickaxe()))
         return true;
