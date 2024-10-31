@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using System.Collections;
 using UnityEngine.EventSystems;
 
 public class FoodBar : MonoBehaviour
@@ -13,6 +14,49 @@ public class FoodBar : MonoBehaviour
     public float scaleCoefficient = 1f;
 
     private List<GameObject> foodSlots = new List<GameObject>();
+
+private Dictionary<int, Color> originalSlotColors = new Dictionary<int, Color>();
+
+
+    public void SetSlotBuffActive(int slotIndex, float duration)
+    {
+        if (slotIndex >= 0 && slotIndex < foodSlots.Count)
+        {
+            GameObject slot = foodSlots[slotIndex];
+            Image outlineImage = slot.transform.Find("Background")?.GetComponent<Image>();
+            
+            if (outlineImage != null)
+            {
+                // Store original color if not stored
+                if (!originalSlotColors.ContainsKey(slotIndex))
+                {
+                    originalSlotColors[slotIndex] = outlineImage.color;
+                }
+                
+                // Set buff color
+                outlineImage.color = new Color(1f, 0.95f, 0.2f, 1f); // Same yellow as item bar
+                
+                // Start coroutine to reset color after duration
+                StartCoroutine(ResetSlotColorAfterDuration(slotIndex, duration));
+            }
+        }
+    }
+
+    private IEnumerator ResetSlotColorAfterDuration(int slotIndex, float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        
+        if (slotIndex >= 0 && slotIndex < foodSlots.Count)
+        {
+            GameObject slot = foodSlots[slotIndex];
+            Image outlineImage = slot.transform.Find("Background")?.GetComponent<Image>();
+            
+            if (outlineImage != null && originalSlotColors.ContainsKey(slotIndex))
+            {
+                outlineImage.color = originalSlotColors[slotIndex];
+            }
+        }
+    }
 
     void Start()
     {
@@ -54,12 +98,38 @@ private void UpdateSlotKeyBindings(GameObject slot, int index)
 public void UpdateFoodBar()
 {
     var foodItems = playerInventory.GetFoodBarItems();
+    PlayerStats playerStats = FindObjectOfType<PlayerStats>();
 
     // Clear existing items and update each slot
     for (int i = 0; i < foodSlots.Count; i++)
     {
         GameObject slot = foodSlots[i];
         
+        // Reset background color if slot becomes empty
+        if (i >= foodItems.Count)
+        {
+            Image outlineImage = slot.transform.Find("Background")?.GetComponent<Image>();
+            if (outlineImage != null && originalSlotColors.ContainsKey(i))
+            {
+                outlineImage.color = originalSlotColors[i];
+                originalSlotColors.Remove(i);
+            }
+        }
+        else
+        {
+            // Check if this slot has a buff-giving food
+            string itemName = foodItems[i].Key;
+            string baseFoodName = itemName.Split('_')[0];
+            if (baseFoodName == "Herby Carrots" || baseFoodName == "Bread")
+            {
+                float remainingDuration = playerStats.GetRemainingBuffDuration(baseFoodName);
+                if (remainingDuration > 0)
+                {
+                    SetSlotBuffActive(i, remainingDuration);
+                }
+            }
+        }
+
         // Update key binding text
         TextMeshProUGUI keyBindText = slot.transform.Find("KeyBindText")?.GetComponent<TextMeshProUGUI>();
         if (keyBindText != null)

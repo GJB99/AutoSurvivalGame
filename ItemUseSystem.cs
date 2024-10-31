@@ -9,34 +9,49 @@ public class ItemUseSystem : MonoBehaviour
     public float bowCooldown = 0.5f;
     private float lastShotTime;
     private Vector2 lastMovementDirection = Vector2.right;
+    private ItemBar itemBar;
 
-
-    void Update()
+    void Start()
     {
-        // Add this before the item use check
-        float horizontalInput = Input.GetAxisRaw("Horizontal");
-        float verticalInput = Input.GetAxisRaw("Vertical");
-        
-        if (horizontalInput != 0 || verticalInput != 0)
-        {
-            lastMovementDirection = new Vector2(horizontalInput, verticalInput).normalized;
-        }
         inventory = GetComponent<PlayerInventory>();
-        // Handle slot selection (1-5 keys)
+        itemBar = FindObjectOfType<ItemBar>();
+    }
+
+void Update()
+{
+    float horizontalInput = Input.GetAxisRaw("Horizontal");
+    float verticalInput = Input.GetAxisRaw("Vertical");
+    
+    if (horizontalInput != 0 || verticalInput != 0)
+    {
+        lastMovementDirection = new Vector2(horizontalInput, verticalInput).normalized;
+    }
+
+    bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+
+    // Handle slot selection (1-5 keys) only when shift is NOT held
+    if (!shiftHeld)
+    {
         for (int i = 0; i < 5; i++)
         {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i))
             {
                 selectedSlot = i;
+                // Update the item bar visuals when slot changes
+                if (itemBar != null)
+                {
+                    itemBar.UpdateItemBar();
+                }
             }
         }
-
-        // Handle item use
-        if (Input.GetKeyDown(KeyCode.Space) && selectedSlot != -1)
-        {
-            UseSelectedItem();
-        }
     }
+
+    // Handle item use
+    if (Input.GetKeyDown(KeyCode.Space) && selectedSlot != -1)
+    {
+        UseSelectedItem();
+    }
+}
 
 void UseSelectedItem()
 {

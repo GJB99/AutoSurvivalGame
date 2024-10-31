@@ -14,12 +14,30 @@ public class ItemBar : MonoBehaviour
     private ItemUseSystem itemUseSystem;
     private List<GameObject> itemSlots = new List<GameObject>();
 
-    void Start()
+void Start()
+{
+    itemUseSystem = FindObjectOfType<ItemUseSystem>();
+    CreateItemSlots();
+    UpdateItemBar();
+}
+
+void Update()
+{
+    bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+    
+    // Only process number keys if shift is NOT held
+    if (!shiftHeld)
     {
-        itemUseSystem = FindObjectOfType<ItemUseSystem>();
-        CreateItemSlots();
-        UpdateItemBar();
+        for (int i = 0; i < numberOfSlots; i++)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+            {
+                itemUseSystem.selectedSlot = i;  // Use local selectedSlot instead
+                UpdateItemBar();
+            }
+        }
     }
+}
 
     void CreateItemSlots()
     {
@@ -62,26 +80,29 @@ public void UpdateItemBar()
             keyBindText.alignment = TextAlignmentOptions.Center;
         }
 
-        // Set black outline
-        if (outlineImage != null)
-        {
-            outlineImage.color = new Color(0f, 0f, 0f, 1f);
-        }
-
         // Update slot background color based on selection
-        if (slotImage != null)
+        if (outlineImage != null)
         {
             if (i == itemUseSystem.selectedSlot)
             {
-                slotImage.color = new Color(1f, 1f, 0.7f, 1f); // Light yellow for selected slot
-            }
-            else if (i < itemBarItems.Count)
-            {
-                slotImage.color = new Color(0.6f, 0.6f, 0.6f, 1f); // Darker gray for filled slots
+                outlineImage.color = new Color(1f, 0.95f, 0.2f, 1f); // Bright yellow outline for selected slot
             }
             else
             {
-                slotImage.color = new Color(0.8f, 0.8f, 0.8f, 1f); // Light gray for empty slots
+                outlineImage.color = new Color(0f, 0f, 0f, 1f); // Black outline for unselected slots
+            }
+        }
+
+        // Keep slot background colors consistent
+        if (slotImage != null)
+        {
+            if (i < itemBarItems.Count)
+            {
+                slotImage.color = new Color(0.7f, 0.7f, 0.7f, 1f); // Medium gray for filled slots
+            }
+            else
+            {
+                slotImage.color = new Color(0.5f, 0.5f, 0.5f, 1f); // Darker gray for empty slots
             }
         }
 

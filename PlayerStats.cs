@@ -121,6 +121,29 @@ private void Update()
     }
 }
 
+private float GetBuffDuration(string foodName)
+{
+    switch (foodName.ToLower())
+    {
+        case "herby carrots":
+            return 45f;
+        case "bread":
+            return 30f;
+        default:
+            return 15f;
+    }
+}
+
+public float GetRemainingBuffDuration(string foodName)
+{
+    FoodEffect existingBuff = activeBuffs.FirstOrDefault(b => b.name == foodName);
+    if (existingBuff != null)
+    {
+        return existingBuff.duration;
+    }
+    return 0f;
+}
+
 private void TryEatFood(int slotIndex)
 {
     var foodItems = playerInventory.GetFoodBarItems();
@@ -131,6 +154,12 @@ private void TryEatFood(int slotIndex)
         if (IsEdibleFood(baseFoodName))
         {
             ApplyFoodEffect(baseFoodName);
+            // Only highlight if it's a buff-giving food
+            if (baseFoodName == "Herby Carrots" || baseFoodName == "Bread")
+            {
+                float buffDuration = GetBuffDuration(baseFoodName);
+                FindObjectOfType<FoodBar>().SetSlotBuffActive(slotIndex, buffDuration);
+            }
             playerInventory.RemoveFromFoodBar(foodName, 1);
         }
         else if (playerInventory.IsFood(baseFoodName))

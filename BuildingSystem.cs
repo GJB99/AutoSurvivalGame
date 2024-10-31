@@ -88,6 +88,7 @@ public void InitiateBuildingPlacement(string buildingName)
         {
             Destroy(activeBuildingPlacer.gameObject);
         }
+        lastSelectedItemName = buildingName;  // Store the building name
         GameObject placerObject = Instantiate(buildingPlacerPrefab);
         activeBuildingPlacer = placerObject.GetComponent<BuildingPlacer>();
         activeBuildingPlacer.Initialize(buildingPrefab, this);
