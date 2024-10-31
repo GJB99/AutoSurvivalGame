@@ -76,7 +76,7 @@ public void UpdateItemBar()
         if (keyBindText != null)
         {
             keyBindText.text = (i + 1).ToString();
-            keyBindText.fontSize = 10;
+            keyBindText.fontSize = 20;
             keyBindText.alignment = TextAlignmentOptions.Center;
         }
 

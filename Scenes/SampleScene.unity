@@ -477,8 +477,8 @@ MonoBehaviour:
   foodSlotPrefab: {fileID: 1094164463703806785, guid: 18865b6084c1315418571cac58e71d70, type: 3}
   numberOfSlots: 3
   playerInventory: {fileID: 511426193}
-  spacing: 10
   scaleCoefficient: 1
+  spacing: 25
 --- !u!224 &69671058
 RectTransform:
   m_ObjectHideFlags: 0

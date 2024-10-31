@@ -10,8 +10,8 @@ public class FoodBar : MonoBehaviour
     public GameObject foodSlotPrefab;
     public int numberOfSlots = 3;
     public PlayerInventory playerInventory;
-    public float spacing = 10f;
     public float scaleCoefficient = 1f;
+    public float spacing = 12.5f;
 
     private List<GameObject> foodSlots = new List<GameObject>();
 
@@ -64,25 +64,25 @@ private Dictionary<int, Color> originalSlotColors = new Dictionary<int, Color>()
         UpdateFoodBar();
     }
 
-    void CreateFoodSlots()
+void CreateFoodSlots()
+{
+    RectTransform prefabRectTransform = foodSlotPrefab.GetComponent<RectTransform>();
+    float slotWidth = prefabRectTransform.rect.width * scaleCoefficient;
+    float slotHeight = prefabRectTransform.rect.height * scaleCoefficient;
+    float posY = prefabRectTransform.anchoredPosition.y;
+
+    float totalWidth = (slotWidth * numberOfSlots) + (spacing * (numberOfSlots - 1));
+    float startX = -totalWidth / 2 + slotWidth / 2;
+
+    for (int i = 0; i < numberOfSlots; i++)
     {
-        RectTransform prefabRectTransform = foodSlotPrefab.GetComponent<RectTransform>();
-        float slotWidth = prefabRectTransform.rect.width * scaleCoefficient;
-        float slotHeight = prefabRectTransform.rect.height * scaleCoefficient;
-        float posY = prefabRectTransform.anchoredPosition.y;
-
-        float totalWidth = (slotWidth * numberOfSlots) + (spacing * (numberOfSlots - 1));
-        float startX = -totalWidth / 2 + slotWidth / 2;
-
-        for (int i = 0; i < numberOfSlots; i++)
-        {
-            GameObject slot = Instantiate(foodSlotPrefab, transform);
-            RectTransform slotRectTransform = slot.GetComponent<RectTransform>();
-            slotRectTransform.anchoredPosition = new Vector2(startX + i * (slotWidth + spacing), posY);
-            slotRectTransform.sizeDelta = new Vector2(slotWidth, slotHeight);
-            foodSlots.Add(slot);
-        }
+        GameObject slot = Instantiate(foodSlotPrefab, transform);
+        RectTransform slotRectTransform = slot.GetComponent<RectTransform>();
+        slotRectTransform.anchoredPosition = new Vector2(startX + i * (slotWidth + spacing), posY);
+        slotRectTransform.sizeDelta = new Vector2(slotWidth, slotHeight);
+        foodSlots.Add(slot);
     }
+}
 
 private void UpdateSlotKeyBindings(GameObject slot, int index)
 {
@@ -135,7 +135,7 @@ public void UpdateFoodBar()
         if (keyBindText != null)
         {
             keyBindText.text = $"Shift+{i + 1}";
-            keyBindText.fontSize = 10;
+            keyBindText.fontSize = 20;
             keyBindText.alignment = TextAlignmentOptions.Center;
         }
 
