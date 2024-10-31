@@ -135,7 +135,7 @@ public void UpdateFoodBar()
         if (keyBindText != null)
         {
             keyBindText.text = $"Shift+{i + 1}";
-            keyBindText.fontSize = 20;
+            keyBindText.fontSize = 10;
             keyBindText.alignment = TextAlignmentOptions.Center;
         }
 

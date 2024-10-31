@@ -11,8 +11,10 @@ namespace YourGameNamespace
         public GameObject loggingPanel;
         public GameObject messagesContent;
         public GameObject inventoryContent;
+        public GameObject tipsContent;  // Add this
         public Button messagesTabButton;
         public Button inventoryTabButton;
+        public Button tipsTabButton;    // Add this
         public TextMeshProUGUI messagesText;
         public TextMeshProUGUI inventoryText;
 
@@ -33,8 +35,8 @@ namespace YourGameNamespace
             loggingPanel.SetActive(false);
             messagesTabButton.onClick.AddListener(() => ShowTab(messagesContent));
             inventoryTabButton.onClick.AddListener(() => ShowTab(inventoryContent));
+            tipsTabButton.onClick.AddListener(() => ShowTab(tipsContent));  // Add this
             
-            // Get ScrollRect components
             messagesScrollRect = messagesContent.GetComponentInParent<ScrollRect>();
             inventoryScrollRect = inventoryContent.GetComponentInParent<ScrollRect>();
             
@@ -77,44 +79,47 @@ namespace YourGameNamespace
             }
         }
 
-private void ShowTab(GameObject tabContent)
-{
-    // Reset previous button color if exists
-    if (currentSelectedButton != null)
+    private void ShowTab(GameObject tabContent)
     {
-        Image buttonImage = currentSelectedButton.GetComponent<Image>();
-        if (buttonImage != null)
+        // Reset previous button color if exists
+        if (currentSelectedButton != null)
         {
-            Color color = normalColor;
-            color.a = buttonImage.color.a;
-            buttonImage.color = color;
+            Image buttonImage = currentSelectedButton.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                Color color = normalColor;
+                color.a = buttonImage.color.a;
+                buttonImage.color = color;
+            }
         }
-    }
 
-    // Set new button color based on tab
-    Button selectedButton = null;
-    if (tabContent == messagesContent)
-        selectedButton = messagesTabButton;
-    else if (tabContent == inventoryContent)
-        selectedButton = inventoryTabButton;
+        // Set new button color based on tab
+        Button selectedButton = null;
+        if (tabContent == messagesContent)
+            selectedButton = messagesTabButton;
+        else if (tabContent == inventoryContent)
+            selectedButton = inventoryTabButton;
+        else if (tabContent == tipsContent)  // Add this
+            selectedButton = tipsTabButton;
 
-    if (selectedButton != null)
-    {
-        Image buttonImage = selectedButton.GetComponent<Image>();
-        if (buttonImage != null)
+        if (selectedButton != null)
         {
-            Color color = selectedColor;
-            color.a = buttonImage.color.a;
-            buttonImage.color = color;
+            Image buttonImage = selectedButton.GetComponent<Image>();
+            if (buttonImage != null)
+            {
+                Color color = selectedColor;
+                color.a = buttonImage.color.a;
+                buttonImage.color = color;
+            }
+            currentSelectedButton = selectedButton;
         }
-        currentSelectedButton = selectedButton;
-    }
 
-    messagesContent.SetActive(false);
-    inventoryContent.SetActive(false);
-    tabContent.SetActive(true);
-    UpdateDisplays();
-}
+        messagesContent.SetActive(false);
+        inventoryContent.SetActive(false);
+        tipsContent.SetActive(false);  // Add this
+        tabContent.SetActive(true);
+        UpdateDisplays();
+    }
 
         private System.Collections.IEnumerator RestoreScrollPosition()
         {
