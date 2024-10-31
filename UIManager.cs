@@ -460,6 +460,7 @@ public void OnEndDrag(PointerEventData eventData)
                itemName == "Processor" || 
                itemName == "Cooking Station" || 
                itemName == "Drill" || 
+               itemName == "Oven" ||
                itemName == "Conveyor";
     }
 

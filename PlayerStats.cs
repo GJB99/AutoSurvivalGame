@@ -154,6 +154,9 @@ private void TryEatFood(int slotIndex)
             case "Herby Carrots":
                 satietyAmount = 10f;
                 break;
+            case "Bread":  // Add bread effect
+                satietyAmount = 10f;
+                break;
         }
 
         // Add satiety
@@ -167,7 +170,7 @@ private void TryEatFood(int slotIndex)
 
     private bool IsEdibleFood(string foodName)
     {
-        return foodName == "Carrot" || foodName == "Herby Carrots";
+        return foodName == "Carrot" || foodName == "Herby Carrots" || foodName == "Bread";
     }
 
 private void AddFoodEffect(string foodName, float satietyAmount)
@@ -180,7 +183,7 @@ private void AddFoodEffect(string foodName, float satietyAmount)
     
     bool hasBuff = false;
     
-    if (foodName == "Herby Carrots")
+    if (foodName == "Herby Carrots"|| foodName == "Bread")
     {
         hasBuff = true;
         effect.maxHealthBonus = 10f;

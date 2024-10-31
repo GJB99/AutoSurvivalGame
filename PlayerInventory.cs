@@ -696,6 +696,7 @@ public Dictionary<string, int> EdibleFoodValues = new Dictionary<string, int>()
 {
     {"Carrot", 5},
     {"Herby Carrots", 10},
+    {"Bread", 10},
     // Add more edible foods here
 };
 }

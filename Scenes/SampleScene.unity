@@ -457,7 +457,7 @@ GameObject:
   - component: {fileID: 69671057}
   m_Layer: 5
   m_Name: FoodBar
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3269,7 +3269,7 @@ GameObject:
   - component: {fileID: 461554076}
   m_Layer: 0
   m_Name: Character
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3720,8 +3720,8 @@ MonoBehaviour:
   drillPrefab: {fileID: 7524271903952721873, guid: eb762814cd3d79342bbed7ad4153ac91, type: 3}
   conveyorBeltPrefab: {fileID: 7524271903952721873, guid: dbc26e9ec583f1f4e98823f7437f24d8, type: 3}
   cookingStationPrefab: {fileID: 7524271903952721873, guid: f45f4e39915e85549b85552691e93de6, type: 3}
-  ovenPrefab: {fileID: 0}
   processorPrefab: {fileID: 7524271903952721873, guid: 3c9f7227983a9db4cbacefe96db969bc, type: 3}
+  ovenPrefab: {fileID: 7524271903952721873, guid: ba9ca20855e4ea849bd000177b1b5b20, type: 3}
   messageText: {fileID: 1040603363}
   messageDisplayTime: 2
   fabricationTime: 1
@@ -3879,6 +3879,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c83434bcaefa0fe49b16d05665119e58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selectedSlot: -1
   arrowPrefab: {fileID: 7524271903952721873, guid: eddebc8491a1a7a49a4db5874d2a9b13, type: 3}
   arrowSpeed: 20
   bowCooldown: 0.5
@@ -5503,7 +5504,7 @@ GameObject:
   - component: {fileID: 748928167}
   m_Layer: 5
   m_Name: BuildingMenuCanvas
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5736,7 +5737,7 @@ GameObject:
   - component: {fileID: 797875140}
   m_Layer: 6
   m_Name: Minimap
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7196,7 +7197,7 @@ GameObject:
   - component: {fileID: 974833218}
   m_Layer: 5
   m_Name: UIBottomRight
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8798,7 +8799,7 @@ GameObject:
   - component: {fileID: 1122117293}
   m_Layer: 5
   m_Name: MessageCanvas
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8898,7 +8899,7 @@ GameObject:
   - component: {fileID: 1122309850}
   m_Layer: 0
   m_Name: UITopLeft
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -9203,7 +9204,7 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.7798742, g: 0.7798742, b: 0.7798742, a: 1}
-    m_PressedColor: {r: 0.78039217, g: 0.78039217, b: 0.78039217, a: 1}
+    m_PressedColor: {r: 1, g: 1, b: 1, a: 1}
     m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
@@ -10556,7 +10557,7 @@ GameObject:
   - component: {fileID: 1401847963}
   m_Layer: 5
   m_Name: ItemBar
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10798,7 +10799,7 @@ GameObject:
   - component: {fileID: 1414780039}
   m_Layer: 0
   m_Name: UIManager
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11302,7 +11303,7 @@ GameObject:
   - component: {fileID: 1514373000}
   m_Layer: 0
   m_Name: BiomeManager
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11881,7 +11882,7 @@ GameObject:
   - component: {fileID: 1614757688}
   m_Layer: 6
   m_Name: MinimapCanvas
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11983,7 +11984,7 @@ GameObject:
   - component: {fileID: 1624076150}
   m_Layer: 5
   m_Name: CharacterCanvas
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -13118,7 +13119,7 @@ GameObject:
   - component: {fileID: 1711091301}
   m_Layer: 5
   m_Name: InventoryCanvas
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -13311,7 +13312,7 @@ GameObject:
   - component: {fileID: 1725620004}
   m_Layer: 0
   m_Name: EventSystem
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -13454,7 +13455,7 @@ GameObject:
   - component: {fileID: 1755067543}
   m_Layer: 8
   m_Name: GridSystem
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -14287,7 +14288,7 @@ GameObject:
   - component: {fileID: 1817195212}
   m_Layer: 0
   m_Name: LoggingPanel
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -15632,7 +15633,7 @@ GameObject:
   - component: {fileID: 2131410085}
   m_Layer: 6
   m_Name: FullMapPanel
-  m_TagString: Untagged
+  m_TagString: UI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

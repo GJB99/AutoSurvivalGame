@@ -85,6 +85,7 @@ private string GetBuildingType()
         case "Cooking Station":
         case "Processor":
         case "Drill":
+        case "Oven":
         case "Conveyor":
             return name;
         default:

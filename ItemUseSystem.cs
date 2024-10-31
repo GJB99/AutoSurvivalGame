@@ -8,14 +8,20 @@ public class ItemUseSystem : MonoBehaviour
     public float arrowSpeed = 20f;
     public float bowCooldown = 0.5f;
     private float lastShotTime;
+    private Vector2 lastMovementDirection = Vector2.right;
 
-    void Start()
-    {
-        inventory = GetComponent<PlayerInventory>();
-    }
 
     void Update()
     {
+        // Add this before the item use check
+        float horizontalInput = Input.GetAxisRaw("Horizontal");
+        float verticalInput = Input.GetAxisRaw("Vertical");
+        
+        if (horizontalInput != 0 || verticalInput != 0)
+        {
+            lastMovementDirection = new Vector2(horizontalInput, verticalInput).normalized;
+        }
+        inventory = GetComponent<PlayerInventory>();
         // Handle slot selection (1-5 keys)
         for (int i = 0; i < 5; i++)
         {
@@ -57,30 +63,27 @@ void UseSelectedItem()
     }
 }
 
-    void ShootArrow()
-    {
-        // Get movement direction or mouse direction
-        Vector2 direction;
-        float horizontalInput = Input.GetAxisRaw("Horizontal");
-        float verticalInput = Input.GetAxisRaw("Vertical");
-        
-        if (horizontalInput != 0 || verticalInput != 0)
-        {
-            direction = new Vector2(horizontalInput, verticalInput).normalized;
-        }
-        else
-        {
-            // Default to right direction if not moving
-            direction = Vector2.right;
-        }
+void ShootArrow()
+{
+    // Get mouse position in world coordinates
+    Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+    
+    // Calculate direction from player to mouse
+    Vector2 direction = (mousePosition - (Vector2)transform.position).normalized;
 
-        // Create arrow
-        GameObject arrow = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
-        arrow.transform.right = direction; // Orient arrow
-        Rigidbody2D rb = arrow.GetComponent<Rigidbody2D>();
-        rb.velocity = direction * arrowSpeed;
-        
-        // Destroy arrow after 5 seconds
-        Destroy(arrow, 5f);
-    }
+    // Create arrow
+    GameObject arrow = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
+    
+    // Calculate the angle from the direction and add 90 degrees to align the sprite
+    float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg + 225f;
+    
+    // Set the arrow's rotation to point in the direction of travel
+    arrow.transform.rotation = Quaternion.Euler(0, 0, angle);
+    
+    Rigidbody2D rb = arrow.GetComponent<Rigidbody2D>();
+    rb.velocity = direction * arrowSpeed;
+    
+    // Destroy arrow after 5 seconds
+    Destroy(arrow, 5f);
+}
 }

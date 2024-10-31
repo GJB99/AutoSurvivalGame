@@ -93,6 +93,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0f418c7c8919c1f4cab1cd949573b2cc, type: 2}
   - {fileID: 11400000, guid: 90ae4d2be98ee7248bbaa2ceba4426da, type: 2}
   - {fileID: 11400000, guid: 0ef3446530c750b4db1c05a063818367, type: 2}
+  - {fileID: 11400000, guid: 88da37f4b8afa664183b2c3791b2e35f, type: 2}
 --- !u!21 &1098677625038383661
 Material:
   serializedVersion: 8

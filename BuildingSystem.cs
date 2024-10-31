@@ -108,6 +108,8 @@ private GameObject GetBuildingPrefab(string buildingName)
             return drillPrefab;
         case "Conveyor":
             return conveyorBeltPrefab;
+        case "Oven":
+            return ovenPrefab;
         default:
             Debug.LogWarning($"Unknown building type: {buildingName}");
             return null;
@@ -447,6 +449,7 @@ private void ParseCost(Transform costTransform, out int cost, out string resourc
     private void PopulateFoodPanel()
     {
         AddItemToPanel(foodPanel, "Herby Carrots", "Herby Carrots", 1, "Carrot", 1, "Herb", true, "Cooking Station");
+        AddItemToPanel(foodPanel, "Bread", "Bread", 2, "Wheat", 0, null, true, "Oven");
     }
 
     private void PopulateComponentsPanel()
