@@ -15,7 +15,9 @@ namespace YourGameNamespace
         public GameObject plantFiberPrefab;
         public GameObject tinPrefab;
         public GameObject clayPrefab;
+        public GameObject potatoPrefab;
         [Header("Desert")]
+        public GameObject sugarCanePrefab;
         public GameObject copperPrefab;
         public GameObject ironPrefab;
         [Header("Industrial")]
@@ -83,6 +85,7 @@ namespace YourGameNamespace
 
             // Generate other resources
             // Forest
+            GenerateSpecificResourceVein(centerTile, potatoPrefab, BiomeType.Forest);
             GenerateSpecificResourceVein(centerTile, woodPrefab, BiomeType.Forest);
             GenerateSpecificResourceVein(centerTile, herbPrefab, BiomeType.Forest);
             GenerateSpecificResourceVein(centerTile, rockPrefab, BiomeType.Forest);
@@ -93,6 +96,7 @@ namespace YourGameNamespace
             // Desert
             GenerateSpecificResourceVein(centerTile, copperPrefab, BiomeType.Desert);
             GenerateSpecificResourceVein(centerTile, ironPrefab, BiomeType.Desert);
+            GenerateSpecificResourceVein(centerTile, sugarCanePrefab, BiomeType.Desert);
             // Industrial
             GenerateSpecificResourceVein(centerTile, oilPrefab, BiomeType.IndustrialWasteland);
             GenerateSpecificResourceVein(centerTile, scrapPrefab, BiomeType.IndustrialWasteland);
@@ -143,12 +147,6 @@ namespace YourGameNamespace
                     );
 
                     float distanceFromCenter = Vector2.Distance(new Vector2(worldPos.x, worldPos.y), worldCenter / cellSize);
-
-                    if (Mathf.Abs(distanceFromCenter - forestRadius / cellSize) < 2)
-                    {
-                        biomeManager.SetWaterAt(worldPos, true);
-                        PlaceResource(worldPos, waterPrefab);
-                    }
                 }
             }
         }

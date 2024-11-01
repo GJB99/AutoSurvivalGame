@@ -82,6 +82,7 @@ private string GetBuildingType()
     switch (name)
     {
         case "Smelter":
+        case "Chest":
         case "Cooking Station":
         case "Processor":
         case "Drill":

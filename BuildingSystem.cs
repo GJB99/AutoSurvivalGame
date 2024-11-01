@@ -13,6 +13,7 @@ public class BuildingSystem : MonoBehaviour
     public GameObject cookingStationPrefab;
     public GameObject processorPrefab;
     public GameObject ovenPrefab;
+    public GameObject bucketPrefab;
 
     private PlayerInventory playerInventory;
     public TextMeshProUGUI messageText;
@@ -111,6 +112,10 @@ private GameObject GetBuildingPrefab(string buildingName)
             return conveyorBeltPrefab;
         case "Oven":
             return ovenPrefab;
+        case "Chest":
+            return chestPrefab;
+        case "Bucket":
+            return bucketPrefab;
         default:
             Debug.LogWarning($"Unknown building type: {buildingName}");
             return null;
@@ -441,16 +446,19 @@ private void ParseCost(Transform costTransform, out int cost, out string resourc
     private void PopulateGearPanel()
     {
         AddItemToPanel(gearPanel, "Stone Pickaxe", "Stone Pickaxe", 5, "Rock", 5, "Wood");
-        AddItemToPanel(gearPanel, "Iron Pickaxe", "Iron Pickaxe", 1, "Stone Pickaxe", 10, "Iron");
+        AddItemToPanel(gearPanel, "Iron Pickaxe", "Iron Pickaxe", 1, "Stone Pickaxe", 10, "Iron Ingot");
         AddItemToPanel(gearPanel, "Wood Helmet", "Wood Helmet", 10, "Wood", 3, "String");
         AddItemToPanel(gearPanel, "Bow", "Bow", 10, "Wood", 2, "String");
         AddItemToPanel(gearPanel, "Arrow", "Arrow", 1, "Wood", 1, "Rock");
+        AddItemToPanel(gearPanel, "Bucket", "Bucket", 5, "Tin");
     }
 
     private void PopulateFoodPanel()
     {
         AddItemToPanel(foodPanel, "Herby Carrots", "Herby Carrots", 1, "Carrot", 1, "Herb", true, "Cooking Station");
         AddItemToPanel(foodPanel, "Bread", "Bread", 2, "Wheat", 0, null, true, "Oven");
+        AddItemToPanel(foodPanel, "Salt", "Salt", 1, "Bucket with Water", 0, null, true, "Cooking Station");
+        AddItemToPanel(foodPanel, "Sugar", "Sugar", 1, "Sugar Cane");
     }
 
     private void PopulateComponentsPanel()
@@ -462,16 +470,17 @@ private void ParseCost(Transform costTransform, out int cost, out string resourc
 
     private void PopulateBasePanel()
     {
-        AddItemToPanel(basePanel, "Smelter", "Smelter", 5, "Copper", 5, "Iron", false, null, 10, "Rock");
-        AddItemToPanel(basePanel, "Processor", "Processor", 10, "Iron Ingot", 10, "Copper Ingot");
-        AddItemToPanel(basePanel, "Cooking Station", "Cooking Station", 10, "Wood", 5, "Iron");
-        AddItemToPanel(basePanel, "Oven", "Oven", 10, "Wood", 5, "Rock");
+        AddItemToPanel(basePanel, "Smelter", "Smelter", 5, "Tin", 5, "Rock");
+        AddItemToPanel(basePanel, "Processor", "Processor", 5, "Iron Ingot", 5, "Copper Ingot");
+        AddItemToPanel(basePanel, "Cooking Station", "Cooking Station", 5, "Wood", 5, "Tin");
+        AddItemToPanel(basePanel, "Oven", "Oven", 5, "Wood", 5, "Rock");
+        AddItemToPanel(basePanel, "Chest", "Chest", 5, "Wood", 5, "Rock");
     }
 
     private void PopulateAutoPanel()
     {
-        AddItemToPanel(autoPanel, "Drill", "Drill", 10, "Iron Ingot", 5, "Copper Ingot");
-        AddItemToPanel(autoPanel, "Conveyor", "Conveyor", 5, "Iron Ingot", 5, "Copper Ingot");
+        AddItemToPanel(autoPanel, "Drill", "Drill", 5, "Iron Ingot", 5, "Copper Ingot");
+        AddItemToPanel(autoPanel, "Conveyor", "Conveyor", 1, "Iron Ingot", 1, "Copper Ingot");
     }
 
     private void AddItemToPanel(GameObject panel, string itemName, string imageName, int cost1, string resource1, int cost2 = 0, string resource2 = null, bool requiresStation = false, string stationName = null, int cost3 = 0, string resource3 = null)
@@ -616,14 +625,23 @@ private void BuildItem(string itemName, int cost1, string resource1, int cost2, 
 {
     if (CanBuildItem(itemName, cost1, resource1, cost2, resource2, cost3, resource3))
     {
-        playerInventory.RemoveItems(resource1, cost1);
+        // Special handling for items that use Bucket with Water
+        if (resource1 == "Bucket with Water")
+        {
+            playerInventory.RemoveItems(resource1, cost1);
+            playerInventory.AddItem("Bucket", cost1); // Return the empty bucket
+        }
+        else
+        {
+            playerInventory.RemoveItems(resource1, cost1);
+        }
+
         if (cost2 > 0 && resource2 != null)
             playerInventory.RemoveItems(resource2, cost2);
         if (cost3 > 0 && resource3 != null)
             playerInventory.RemoveItems(resource3, cost3);
 
         playerInventory.AddItem(itemName, 1);
-        // Replace direct message with resource gain message
         uiManager.ShowResourceGainMessage(itemName, 1);
     }
     else

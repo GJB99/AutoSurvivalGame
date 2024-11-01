@@ -129,6 +129,10 @@ private void UpdateCursor()
                 Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
             }
         }
+        else if (hit.collider.CompareTag("Water"))
+        {
+            Cursor.SetCursor(selectingCursor, Vector2.zero, CursorMode.Auto);
+        }
         else if (IsClickableObject(hit.collider.gameObject))
         {
             Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
@@ -192,18 +196,36 @@ private void HandleMouseInput()
     }
 }
 
-    bool IsClickableObject(GameObject obj)
-    {
-        return obj.GetComponent<Smelter>() != null;
-    }
+bool IsClickableObject(GameObject obj)
+{
+    return obj.GetComponent<Smelter>() != null || obj.CompareTag("Water");
+}
 
-    void InteractWithClickable(GameObject clickableObject)
+void InteractWithClickable(GameObject clickableObject)
+{
+    if (clickableObject.TryGetComponent<Smelter>(out var smelter))
     {
-        if (clickableObject.TryGetComponent<Smelter>(out var smelter))
-        {
-            InteractWithSmelter(smelter);
-        }
+        InteractWithSmelter(smelter);
     }
+    else if (clickableObject.CompareTag("Water"))
+    {
+        InteractWithWater();
+    }
+}
+
+void InteractWithWater()
+{
+    if (inventory.IsItemSelected("Bucket"))
+    {
+        inventory.RemoveItems("Bucket", 1);
+        inventory.AddItem("Bucket with Water", 1);
+        ShowMessage("Filled bucket with water");
+    }
+    else
+    {
+        ShowMessage("You need to select a Bucket to collect water!");
+    }
+}
 
     void HandleRightClick(Vector2 mouseWorldPosition, RaycastHit2D hit)
     {

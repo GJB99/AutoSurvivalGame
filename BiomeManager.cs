@@ -106,24 +106,26 @@ namespace YourGameNamespace
                 return BiomeType.Lava;
         }
 
-        GameObject GetBiomePrefab(BiomeType biomeType)
-        {
-            switch (biomeType)
-            {
-                case BiomeType.Forest:
-                    return forestPrefab;
-                case BiomeType.Desert:
-                    return desertPrefab;
-                case BiomeType.IndustrialWasteland:
-                    return industrialWastelandPrefab;
-                case BiomeType.AlienArea:
-                    return alienAreaPrefab;
-                case BiomeType.Lava:
-                    return lavaPrefab;
-                default:
-                    return forestPrefab;
-            }
-        }
+GameObject GetBiomePrefab(BiomeType biomeType)
+{
+    switch (biomeType)
+    {
+        case BiomeType.Forest:
+            return forestPrefab;
+        case BiomeType.Desert:
+            return desertPrefab;
+        case BiomeType.IndustrialWasteland:
+            return industrialWastelandPrefab;
+        case BiomeType.AlienArea:
+            return alienAreaPrefab;
+        case BiomeType.Lava:
+            return lavaPrefab;
+        case BiomeType.Water:
+            return waterPrefab;
+        default:
+            return forestPrefab;
+    }
+}
 
         public BiomeType GetBiomeAt(int x, int y)
         {
@@ -138,39 +140,99 @@ namespace YourGameNamespace
             return biomeMap[x, y];
         }
 
-       void InstantiateBiomeTile(int x, int y, BiomeType biomeType)
-        {
-            GameObject prefab = GetBiomePrefab(biomeType);
-            Vector3 position = new Vector3(x, y, 0);
-            GameObject biomeTile = Instantiate(prefab, position, Quaternion.identity);
-            biomeTile.transform.SetParent(transform);
+void InstantiateBiomeTile(int x, int y, BiomeType biomeType)
+{
+    GameObject prefab = GetBiomePrefab(biomeType);
+    Vector3 position = new Vector3(x, y, 0);
+    GameObject biomeTile = Instantiate(prefab, position, Quaternion.identity);
+    biomeTile.transform.SetParent(transform);
 
-            if (IsWaterTile(x, y))
+    if (IsWaterTile(x, y))
+    {
+        GameObject waterTile = Instantiate(waterPrefab, position, Quaternion.identity);
+        waterTile.transform.SetParent(transform);
+        waterTile.layer = waterLayer;
+    }
+    else if (biomeType == BiomeType.Desert && IsMountainTile(x, y))
+    {
+        GameObject mountainTile = Instantiate(mountainPrefab, position, Quaternion.identity);
+        mountainTile.transform.SetParent(transform);
+        mountainTile.layer = mountainLayer;
+        // Destroy the original desert tile since we're replacing it with a mountain
+        Destroy(biomeTile);
+    }
+}
+
+bool IsWaterTile(int x, int y)
+{
+    if (x < 0 || x >= worldSizeX || y < 0 || y >= worldSizeY)
+    {
+        return false;
+    }
+
+    // Check if current tile is Forest
+    if (biomeMap[x, y] != BiomeType.Forest)
+    {
+        return false;
+    }
+
+    // Check in a wider radius for Desert tiles
+    for (int i = -2; i <= 2; i++)
+    {
+        for (int j = -2; j <= 2; j++)
+        {
+            if (i == 0 && j == 0) continue;
+            
+            int checkX = x + i;
+            int checkY = y + j;
+
+            if (checkX >= 0 && checkX < worldSizeX && checkY >= 0 && checkY < worldSizeY)
             {
-                GameObject waterTile = Instantiate(waterPrefab, position, Quaternion.identity);
-                waterTile.transform.SetParent(transform);
-                waterTile.layer = waterLayer;
-            }
-            else if (biomeType == BiomeType.Desert && IsMountainTile(x, y))
-            {
-                biomeTile.layer = mountainLayer;
+                if (biomeMap[checkX, checkY] == BiomeType.Desert)
+                {
+                    return true; // This is a border tile
+                }
             }
         }
+    }
+    return false;
+}
 
-        bool IsWaterTile(int x, int y)
+bool IsMountainTile(int x, int y)
+{
+    if (x < 0 || x >= worldSizeX || y < 0 || y >= worldSizeY)
+    {
+        return false;
+    }
+
+    // Check if current tile is Desert
+    if (biomeMap[x, y] != BiomeType.Desert)
+    {
+        return false;
+    }
+
+    // Check in a wider radius for Industrial Wasteland tiles
+    for (int i = -2; i <= 2; i++)
+    {
+        for (int j = -2; j <= 2; j++)
         {
-            if (x < 0 || x >= worldSizeX || y < 0 || y >= worldSizeY)
+            if (i == 0 && j == 0) continue;
+            
+            int checkX = x + i;
+            int checkY = y + j;
+
+            if (checkX >= 0 && checkX < worldSizeX && checkY >= 0 && checkY < worldSizeY)
             {
-                return false;
+                if (biomeMap[checkX, checkY] == BiomeType.IndustrialWasteland)
+                {
+                    return true; // This is a border tile
+                }
             }
-            return biomeMap[x, y] == BiomeType.Water;
         }
+    }
+    return false;
+}
 
-        bool IsMountainTile(int x, int y)
-        {
-            // Implement your mountain tile logic here
-            return false; // Placeholder
-        }
 
         public bool IsWaterAt(Vector2Int position)
         {

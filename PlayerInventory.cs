@@ -36,7 +36,7 @@ public bool IsFood(string itemName)
     
     // Add your food item names here
     string[] foodItems = { 
-        "Apple", "Herb", "Carrot", "Bread", "Wheat", "Fish",
+        "Apple", "Salt", "Sugar", "Potato", "Sugar Cane", "Herb", "Carrot", "Bread", "Wheat", "Fish",
         "Herby Carrots" // Add processed food items
     };
     return System.Array.Exists(foodItems, food => 
@@ -636,6 +636,21 @@ public void RemoveFromFoodBar(string itemName, int amount)
         UpdateFoodBar();
         OnInventoryChanged?.Invoke();
     }
+}
+
+public bool HasItem(string itemName, string containerName)
+{
+    Dictionary<string, int> container = GetContainer(containerName);
+    return container.Any(x => x.Key.Split('_')[0] == itemName && x.Value > 0);
+}
+
+public bool IsItemSelected(string itemName)
+{
+    // Get all items in the item bar
+    var itemBarList = GetItemBarItems();
+    
+    // Check if the item exists in the selected slot
+    return itemBarList.Any(x => x.Key.Split('_')[0] == itemName);
 }
 
 private void ConsolidateStacks(string itemName)

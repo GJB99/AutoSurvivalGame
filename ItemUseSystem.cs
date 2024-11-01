@@ -89,16 +89,24 @@ void ShootArrow()
     // Create arrow
     GameObject arrow = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
     
-    // Calculate the angle from the direction and add 90 degrees to align the sprite
+    // Calculate the angle from the direction and add 225 degrees to align the sprite
     float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg + 225f;
     
     // Set the arrow's rotation to point in the direction of travel
     arrow.transform.rotation = Quaternion.Euler(0, 0, angle);
     
-    Rigidbody2D rb = arrow.GetComponent<Rigidbody2D>();
-    rb.velocity = direction * arrowSpeed;
+    // Initialize arrow direction using the Arrow component
+    Arrow arrowComponent = arrow.GetComponent<Arrow>();
+    if (arrowComponent != null)
+    {
+        arrowComponent.Initialize(direction);
+    }
+    else
+    {
+        Debug.LogError("Arrow component not found on arrow prefab!");
+    }
     
-    // Destroy arrow after 5 seconds
+    // Destroy arrow after 5 seconds as a fallback
     Destroy(arrow, 5f);
 }
 }
