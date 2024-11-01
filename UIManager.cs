@@ -461,7 +461,8 @@ public void OnEndDrag(PointerEventData eventData)
                itemName == "Cooking Station" || 
                itemName == "Drill" || 
                itemName == "Oven" ||
-               itemName == "Conveyor";
+               itemName == "Conveyor" ||
+               itemName == "Chest"; 
     }
 
 private void ResetDraggedItemAppearance(PointerEventData eventData)
