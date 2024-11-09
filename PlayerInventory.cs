@@ -159,20 +159,24 @@ public int GetItemCount(string itemName, string containerName)
                    .Sum(x => x.Value);
 } 
 
-    public Dictionary<string, int> GetContainer(string containerName)
+private Dictionary<string, int> GetContainer(string containerName)
+{
+    switch (containerName)
     {
-        switch (containerName)
-        {
-            case "FoodBar":
-                return foodBarItems;
-            case "ItemBar":
-                return itemBarItems;
-            case "MainInventory":
-                return mainInventory;
-            default:
-                return null;
-        }
+        case "MainInventory":
+            return mainInventory;
+        case "ItemBar":
+            return itemBarItems;
+        case "FoodBar":
+            return foodBarItems;
+        case "Character":
+            // Character panel doesn't need a dictionary since items are stored in gear slots
+            return new Dictionary<string, int>();
+        default:
+            Debug.LogError($"Unknown container: {containerName}");
+            return null;
     }
+}
 
     private bool IsFoodItem(string itemName)
     {
@@ -490,7 +494,7 @@ public void UpdateInventoryDisplay()
         // End Drag
         EventTrigger.Entry endDragEntry = new EventTrigger.Entry();
         endDragEntry.eventID = EventTriggerType.EndDrag;
-        dragEntry.callback.AddListener((data) => { uiManager.OnDragEnd((PointerEventData)data); });
+        endDragEntry.callback.AddListener((data) => { uiManager.OnEndDrag((PointerEventData)data); }); // Changed from OnDragEnd to OnEndDrag
         trigger.triggers.Add(endDragEntry);
 
         Image itemImage = newItem.transform.Find("ItemIcon").GetComponent<Image>();
@@ -636,6 +640,49 @@ public void RemoveFromFoodBar(string itemName, int amount)
         UpdateFoodBar();
         OnInventoryChanged?.Invoke();
     }
+}
+
+
+
+public string GetSelectedItemName()
+{
+    // First check if there's a dragged item from UIManager
+    UIManager uiManager = FindObjectOfType<UIManager>();
+    if (uiManager != null && !string.IsNullOrEmpty(uiManager.draggedItemName))
+    {
+        return uiManager.draggedItemName.Split('_')[0];
+    }
+
+    // If no dragged item, check item bar
+    foreach (var item in itemBarItems)
+    {
+        string baseItemName = item.Key.Split('_')[0];
+        if (item.Value > 0)
+        {
+            return baseItemName;
+        }
+    }
+    return null;
+}
+
+public Sprite GetSelectedItemSprite()
+{
+    // First check if there's a dragged item from UIManager
+    UIManager uiManager = FindObjectOfType<UIManager>();
+    if (uiManager != null && !string.IsNullOrEmpty(uiManager.draggedItemName))
+    {
+        return LoadItemSprite(uiManager.draggedItemName.Split('_')[0]);
+    }
+
+    // If no dragged item, check item bar
+    foreach (var item in itemBarItems)
+    {
+        if (item.Value > 0)
+        {
+            return LoadItemSprite(item.Key);
+        }
+    }
+    return null;
 }
 
 public bool HasItem(string itemName, string containerName)

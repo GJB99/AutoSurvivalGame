@@ -4,6 +4,8 @@ using TMPro;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using YourGameNamespace;
+using System;
+using static Character;
 
 
 public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
@@ -16,6 +18,7 @@ public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     public GameObject foodBarPanel;
     public GameObject characterPanel;
     public GameObject mapPanel;
+    public Canvas canvas; 
 
     public Texture2D selectingCursor;
     public Texture2D defaultCursor;
@@ -27,8 +30,9 @@ public class UIManager : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     private BuildingSystem buildingSystem;  
     private bool isDragging = false;
     private GameObject draggedItem;
-    private string draggedItemName;
-    private string dragSourceContainer;
+    public string draggedItemName;
+    public string dragSourceContainer;
+    public Character.GearSlot dragSourceSlot;
 
     public TextMeshProUGUI upperMessageText;  // For first time information/requirement errors
     public TextMeshProUGUI lowerMessageText;  // For item notifications
@@ -131,6 +135,39 @@ private void CloseAllPanels()
     if (craftingPanel != null) craftingPanel.SetActive(false);
     if (characterPanel != null) characterPanel.SetActive(false);
     if (loggingSystem != null) loggingSystem.ClosePanel();
+}
+
+public void CreateDragVisual(Sprite itemSprite, PointerEventData eventData)
+{
+    if (canvas == null)
+    {
+        canvas = FindObjectOfType<Canvas>();
+        if (canvas == null)
+        {
+            Debug.LogError("No Canvas found in the scene!");
+            return;
+        }
+    }
+
+    // Create a new drag visual if we don't have one
+    if (draggedItem == null)
+    {
+        draggedItem = new GameObject("DragVisual");
+        draggedItem.transform.SetParent(canvas.transform);
+        draggedItem.transform.SetAsLastSibling();
+
+        // Add required components
+        RectTransform rt = draggedItem.AddComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(50, 50); // Set appropriate size
+        
+        Image image = draggedItem.AddComponent<Image>();
+        image.sprite = itemSprite;
+        image.raycastTarget = false;
+    }
+
+    // Position the drag visual at the mouse position
+    draggedItem.transform.position = eventData.position;
+    isDragging = true;
 }
 
 private void UpdateResourceGainMessage()
@@ -302,6 +339,7 @@ private void SetupContainerDragHandlers()
     SetupDragHandlersForContainer(inventoryPanel);
     SetupDragHandlersForContainer(itemBarPanel);
     SetupDragHandlersForContainer(foodBarPanel);
+    SetupDragHandlersForContainer(characterPanel);
 }
 
 private void SetupDragHandlersForContainer(GameObject container)
@@ -332,6 +370,9 @@ private void SetupDragHandlersForContainer(GameObject container)
 
 private void SetupDragHandler(GameObject item)
 {
+    // Skip if this is a UI element or non-item object
+    if (!IsValidDraggableItem(item)) return;
+
     EventTrigger trigger = item.GetComponent<EventTrigger>() ?? item.AddComponent<EventTrigger>();
 
     // Begin Drag
@@ -351,6 +392,35 @@ private void SetupDragHandler(GameObject item)
     endDragEntry.eventID = EventTriggerType.EndDrag;
     endDragEntry.callback.AddListener((data) => { OnEndDrag((PointerEventData)data); });
     trigger.triggers.Add(endDragEntry);
+}
+
+private bool IsValidDraggableItem(GameObject item)
+{
+    // Check if it's an inventory/itembar/foodbar item
+    Transform itemIcon = item.transform.Find("ItemIcon");
+    if (itemIcon != null && itemIcon.GetComponent<Image>() != null)
+    {
+        Transform parent = item.transform.parent;
+        while (parent != null)
+        {
+            if (parent.gameObject == inventoryPanel || 
+                parent.gameObject == itemBarPanel ||
+                parent.gameObject == foodBarPanel)
+            {
+                return true;
+            }
+            parent = parent.parent;
+        }
+    }
+
+    // Check if it's a gear slot item with an equipped item
+    if (item.transform.parent?.gameObject == characterPanel)
+    {
+        Image itemImage = item.GetComponentInChildren<Image>();
+        return itemImage != null && itemImage.enabled && itemImage.sprite != null;
+    }
+
+    return false;
 }
 
     private void AddEventTrigger(EventTrigger trigger, EventTriggerType eventType, UnityEngine.Events.UnityAction<BaseEventData> action)
@@ -404,50 +474,94 @@ public void OnBeginDrag(PointerEventData eventData)
         }
     }
 
+public void CleanUpDragOperation()
+{
+    if (draggedItem != null)
+    {
+        Destroy(draggedItem);
+    }
+    
+    // Restore the original slot's appearance if it was from character panel
+    if (dragSourceSlot != null)
+    {
+        dragSourceSlot.itemImage.color = Color.white;
+    }
+    
+    draggedItem = null;
+    draggedItemName = null;
+    dragSourceContainer = null;
+    dragSourceSlot = null;
+    isDragging = false;
+}
+
 public void OnEndDrag(PointerEventData eventData)
 {
     if (isDragging && draggedItem != null && !string.IsNullOrEmpty(draggedItemName))
     {
         GameObject droppedObject = eventData.pointerCurrentRaycast.gameObject;
         string targetContainer = GetContainerName(droppedObject);
+        bool validDrop = false;
+        bool itemReturned = false;
 
-        // Check if we're dropping outside of UI
-        if (!EventSystem.current.IsPointerOverGameObject())
+        // Handle gear items
+        if (dragSourceContainer == "Character")
         {
-            if (IsBuildingItem(draggedItemName))
+            // Only allow dropping in inventory or item bar
+            if (targetContainer == "MainInventory" || targetContainer == "ItemBar")
             {
-                // Show grid and initiate building placement
-                Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
-                worldPos.z = 0;
-                
-                buildingSystem.InitiateBuildingPlacement(draggedItemName);
-                gridSystem.ShowGridPreview(worldPos);
-                
-                // Don't remove the item yet - it will be removed when placement is confirmed
-                CleanUpDragOperation();
-                return;
+                validDrop = true;
+                playerInventory.AddItem(draggedItemName, 1);
+                UpdateAllInventoryDisplays();
+            }
+            else
+            {
+                // If trying to drop on character panel or anywhere else, 
+                // force return to original slot
+                ReturnItemToOriginalSlot(eventData);
+                itemReturned = true;
             }
         }
-
-        if (!string.IsNullOrEmpty(targetContainer))
+        // Handle inventory items
+        else if (!string.IsNullOrEmpty(targetContainer))
         {
-            if (targetContainer != dragSourceContainer)
+            if (targetContainer == "Character")
             {
-                // Move the entire stack
+                // Check if it can be equipped in the target slot
+                Transform slotTransform = droppedObject.transform;
+                while (slotTransform != null && slotTransform.parent != characterPanel.transform)
+                {
+                    slotTransform = slotTransform.parent;
+                }
+
+                if (slotTransform != null)
+                {
+                    Character character = FindObjectOfType<Character>();
+                    if (character != null && character.CanEquipInSlot(draggedItemName, slotTransform.name))
+                    {
+                        validDrop = true;
+                    }
+                    else
+                    {
+                        // Don't return the item to inventory - it's already there
+                        itemReturned = true;
+                    }
+                }
+            }
+            else if (targetContainer != dragSourceContainer)
+            {
                 string baseItemName = draggedItemName.Split('_')[0];
-                bool moved = playerInventory.MoveItem(baseItemName, 1, dragSourceContainer, targetContainer);
+                validDrop = playerInventory.MoveItem(baseItemName, 1, dragSourceContainer, targetContainer);
                 
-                if (moved)
+                if (validDrop)
                 {
                     UpdateAllInventoryDisplays();
                 }
             }
         }
-        else if (IsBuildingItem(draggedItemName))
+
+        if (!validDrop && !itemReturned)
         {
-            buildingSystem.InitiateBuildingPlacement(draggedItemName);
-            playerInventory.RemoveItems(draggedItemName, 1);
-            UpdateAllInventoryDisplays();
+            ResetDraggedItemAppearance(eventData);
         }
 
         CleanUpDragOperation();
@@ -482,18 +596,6 @@ private void UpdateAllInventoryDisplays()
     playerInventory.UpdateInventoryDisplay();
     playerInventory.UpdateItemBar();
     playerInventory.UpdateFoodBar();
-}
-
-private void CleanUpDragOperation()
-{
-    if (draggedItem != null)
-    {
-        Destroy(draggedItem);
-    }
-    draggedItem = null;
-    draggedItemName = null;
-    dragSourceContainer = null;
-    isDragging = false;
 }
 
 private void SwapSlotContents(Transform sourceSlot, Transform targetSlot)
@@ -534,6 +636,45 @@ private Image GetItemImage(GameObject obj)
     return null;
 }
 
+private string GetOriginalSlotType(string itemName)
+{
+    if (itemName.Contains("Helmet") || itemName.Contains("Mask"))
+        return "Helmet";
+    if (itemName.Contains("Armor") || itemName.Contains("Robe"))
+        return "Chest";
+    if (itemName.Contains("Ring"))
+        return "Ring 1"; // or "Ring 2"
+    if (itemName.Contains("Belt") || itemName.Contains("Sash"))
+        return "Belt";
+    if (itemName.Contains("Pants") || itemName.Contains("Leggings"))
+        return "Legs";
+    if (itemName.Contains("Amulet") || itemName.Contains("Necklace"))
+        return "Neck";
+    if (itemName.Contains("Bag") || itemName.Contains("Backpack") || itemName.Contains("Satchel"))
+        return "Bag";
+    return "";
+}
+
+private void ReturnItemToOriginalSlot(PointerEventData eventData)
+{
+    GameObject originalSlot = eventData.pointerDrag;
+    if (originalSlot != null)
+    {
+        Image itemImage = originalSlot.GetComponentInChildren<Image>();
+        if (itemImage != null)
+        {
+            itemImage.enabled = true;
+            itemImage.color = Color.white;
+        }
+
+        Character character = FindObjectOfType<Character>();
+        if (character != null)
+        {
+            character.UpdateStatsDisplay();
+        }
+    }
+}
+
 private string GetContainerName(GameObject obj)
 {
     if (obj == null) return string.Empty;
@@ -547,6 +688,8 @@ private string GetContainerName(GameObject obj)
             return "ItemBar";
         else if (current.gameObject == foodBarPanel)
             return "FoodBar";
+        else if (current.gameObject == characterPanel)
+            return "Character";
 
         current = current.parent;
     }
