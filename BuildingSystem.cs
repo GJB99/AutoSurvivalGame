@@ -60,7 +60,7 @@ public class BuildingSystem : MonoBehaviour
     
     private Button currentSelectedButton;
     private Color normalColor = new Color(0.7f, 0.7f, 0.7f);
-    private Color selectedColor = new Color(0.5f, 0.5f, 0.5f);
+    private Color selectedColor = new Color(0.5f, 0.5f, 0.5f); 
 
 private void Start()
 {
@@ -506,8 +506,8 @@ private void ParseCost(Transform costTransform, out int cost, out string resourc
         rectTransform.anchoredPosition = new Vector2(xPosition, yPosition);
 
         // Adjust content size
-        float contentWidth = 5 * (itemSize + 10) - 10; // 5 items per row, minus last padding
-        float contentHeight = (row + 1) * (itemSize + 10);
+        float contentWidth = 5 * (itemSize + 10) - 20; // 5 items per row, minus last padding
+        float contentHeight = 50;
         contentRect.sizeDelta = new Vector2(contentWidth, contentHeight);
 
         // Set up item components
